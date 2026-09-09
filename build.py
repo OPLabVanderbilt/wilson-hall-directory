@@ -91,6 +91,15 @@ EXCLUDE_PEOPLE = {
     "randolph blake",        # retired
     "sydnie rathert",        # left 2026-07-02 for DAR; Grants Specialist post being refilled
     "david schlundt",        # retired
+    # Schlundt lab members, following his retirement. All were listed only in 317.
+    "ashley sellers",
+    "he xia",
+    "isabela arcila",
+    "jiya patel",
+    "kemberlee bonnet",
+    "madeline stapp",
+    "maya levinson",
+    "seohyun choi",
 }
 
 # Standing information that is not a room. These appear in Common spaces and are
@@ -118,6 +127,8 @@ EXCLUDE_ROOMS = {
     "511", "513", "514",
     "611", "611A", "611AA", "611AB", "611AC", "611AD",
     "611B", "611BA", "611BB", "611BC",
+    # Schlundt lab, closed on his retirement.
+    "317", "318",
 }
 
 # Titles from https://as.vanderbilt.edu/psychology/faculty/ (retrieved 2026-09-09).

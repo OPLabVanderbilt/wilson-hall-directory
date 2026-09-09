@@ -101,7 +101,7 @@ INFO_CARDS = [
         "sub": "Basement, 1st, 2nd, 4th and 6th floors",
         "body": [
             "Restrooms are on the basement, 2nd, 4th and 6th floors \u2014 "
-            "left at end of the hall.",
+            "at end of the hall to the left when facing the street.",
             "On the 1st floor, they are near the elevator.",
         ],
         "keywords": "restroom restrooms bathroom bathrooms toilet toilets "

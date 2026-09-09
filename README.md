@@ -51,7 +51,12 @@ The home screen runs **People and Labs**, then **Common spaces**, then
 **Browse by floor**.
 
 **Common spaces** lists the Department Main Office, then the Chair, then the Vice
-Chair, then the remaining rooms in room-number order. Its membership is a regex over the room's own label in `viewHome()`
+Chair, then any info cards, then the remaining rooms in room-number order.
+
+`INFO_CARDS` in `build.py` holds standing guidance that is not a room — currently
+the restrooms. Each card has a `title`, a one-line `sub`, a `body` (one string per
+paragraph) and `keywords` that make it searchable; "bathroom", "toilet", "loo" and
+"wc" all find the restrooms card. Add a card there, not in `index.html`. Its membership is a regex over the room's own label in `viewHome()`
 in `index.html` — currently Main Office, Chair, Mail Room, Lactation, Conference Room,
 Lounge, Copier.
 

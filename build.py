@@ -86,6 +86,23 @@ EXCLUDE_PEOPLE = {
     "sydnie rathert",        # left 2026-07-02 for DAR; Grants Specialist post being refilled
 }
 
+# Standing information that is not a room. These appear in Common spaces and are
+# searchable by their keywords. Edit the text here, not in index.html.
+INFO_CARDS = [
+    {
+        "id": "restrooms",
+        "title": "Restrooms",
+        "sub": "Basement, 1st, 2nd, 4th and 6th floors",
+        "body": [
+            "Restrooms are on the basement, 2nd, 4th and 6th floors \u2014 "
+            "left of the hall when facing the street.",
+            "On the 1st floor, they are near the elevator.",
+        ],
+        "keywords": "restroom restrooms bathroom bathrooms toilet toilets "
+                    "washroom wc lavatory loo",
+    },
+]
+
 # Rooms to withhold: space vacated by a departure and not yet reassigned, where
 # the spreadsheet still carries the former occupant. Anyone left with no room at
 # all after this is dropped too, and reported in review.txt.
@@ -578,6 +595,7 @@ def main():
         "people": people,
         "rooms": room_list,
         "labs": lab_list,
+        "info": INFO_CARDS,
     }
 
     (HERE / "data.js").write_text(

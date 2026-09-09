@@ -123,6 +123,9 @@ mark{background:var(--accent-bg);color:inherit;border-radius:3px;padding:0 1px}
 .bigroom.tbdtile{background:var(--accent-bg);color:var(--accent);cursor:default;min-width:auto}
 .bigroom b{font-size:23px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .bigroom span{font-size:11.5px;opacity:.78;font-weight:600;letter-spacing:.03em}
+.prose{font-size:16.5px;line-height:1.55;margin:14px 0 0}
+.prose p{margin:0 0 10px}
+.prose p:last-child{margin-bottom:0}
 .empty{color:var(--muted);text-align:center;padding:44px 20px;line-height:1.6}
 .empty b{display:block;color:var(--ink);font-size:17px;margin-bottom:4px}
 footer{color:var(--muted);font-size:12px;text-align:center;padding:26px 20px 8px;line-height:1.6}
@@ -204,6 +207,9 @@ D.people.forEach(function(p){
   p._h = nm([p.n, p.k||'', p.l||'', p.r||'', p.t||''].join(' '));
   p._l = nm(p.s); p._f = nm(p.f);
 });
+(D.info||[]).forEach(function(c){
+  c._h = nm([c.title, c.sub, c.keywords, c.body.join(' ')].join(' '));
+});
 D.labs.forEach(function(l){ l._h = nm(l.n + ' ' + l.people.join(' ')); l._p = nm(l.pi); });
 D.rooms.forEach(function(r){
   r._h = nm([r.num, r.kind||'', r.lab||'', r.floor, r.people.join(' ')].join(' '));
@@ -253,7 +259,13 @@ function search(raw){
     return 0;
   });
 
-  return {toks:toks, people:people, labs:labs, rooms:rooms};
+  var info = scoreAll(D.info||[], function(c,t){
+    if(nm(c.title).indexOf(t)===0) return 200;
+    if(c._h.indexOf(t)>-1) return 60;
+    return 0;
+  });
+
+  return {toks:toks, people:people, labs:labs, rooms:rooms, info:info};
 }
 
 /* ---------- renderers ---------- */
@@ -302,8 +314,14 @@ function fixBtn(slim){
     '<path d="M11.5 2.5l4 4L6 16H2v-4z"/><path d="M10 4l4 4"/></svg>'+
     (slim ? 'Something wrong? Request a correction' : 'Request a change or correction')+'</a>';
 }
+function rowInfo(c, toks){
+  return '<button class="row" data-go="#/i/'+encodeURIComponent(c.id)+'"><span class="txt">'+
+    '<span class="nm">'+hl(c.title, toks)+'</span>'+
+    '<span class="sub">'+hl(c.sub, toks)+'</span></span>'+CHEV+'</button>';
+}
 function section(title, html){
-  return html ? '<h2>'+title+'</h2><div class="list">'+html+'</div>' : '';
+  if(!html) return '';
+  return (title ? '<h2>'+title+'</h2>' : '') + '<div class="list">'+html+'</div>';
 }
 
 /* ---------- views ---------- */
@@ -341,7 +359,13 @@ function viewHome(){
       }
       return rank(a) - rank(b);
     });
-  html += section('Common spaces', common.map(function(r){ return rowRoom(r, []); }).join(''));
+  var lead = common.filter(function(r){
+        return /Main Office|^Department Chair|Vice Chair/i.test(r.kind); }),
+      rest = common.filter(function(r){ return lead.indexOf(r) < 0; });
+  html += section('Common spaces',
+    lead.map(function(r){ return rowRoom(r, []); }).join('') +
+    (D.info||[]).map(function(c){ return rowInfo(c, []); }).join('') +
+    rest.map(function(r){ return rowRoom(r, []); }).join(''));
 
   html += '<h2>Browse by floor</h2><div class="pills">' + D.floors.map(function(f){
     return '<button class="pill" data-go="#/f/'+encodeURIComponent(f)+'">'+esc(f)+'</button>';
@@ -357,6 +381,7 @@ function viewResults(res){
   document.body.classList.remove('detail');
   var t = res.toks;
   var html =
+    section('', res.info.map(function(c){ return rowInfo(c, t); }).join('')) +
     section('People',  res.people.slice(0,40).map(function(p){ return rowPerson(p, D.people.indexOf(p), t); }).join('')) +
     section('Labs',    res.labs.slice(0,10).map(function(l){ return rowLab(l, D.labs.indexOf(l), t); }).join('')) +
     section('Rooms',   res.rooms.slice(0,25).map(function(r){ return rowRoom(r, t); }).join(''));
@@ -412,6 +437,15 @@ function viewLab(i){
     section('Members', l.people.map(function(n){
       var pi = D.people.findIndex(function(p){ return p.n===n; });
       return pi>-1 ? rowPerson(D.people[pi], pi, []) : ''; }).join('')) + fixBtn(true);
+}
+
+function viewInfo(id){
+  var c = (D.info||[]).filter(function(x){ return x.id === id; })[0];
+  if(!c) return viewHome();
+  document.body.classList.add('detail');
+  M.innerHTML = '<div class="hero"><div class="nm">'+esc(c.title)+'</div>'+
+    '<div class="prose">'+ c.body.map(function(par){
+      return '<p>'+esc(par)+'</p>'; }).join('') +'</div></div>' + fixBtn(true);
 }
 
 function viewFloor(f){
@@ -471,6 +505,7 @@ function route(){
   if(parts[0]==='l') return viewLab(+parts[1]);
   if(parts[0]==='r') return viewRoom(decodeURIComponent(parts[1]||''));
   if(parts[0]==='f') return viewFloor(decodeURIComponent(parts[1]||''));
+  if(parts[0]==='i') return viewInfo(decodeURIComponent(parts[1]||''));
   if(parts[0]==='all') return viewAll(parts[1]);
   if(parts[0]==='role') return viewRole(decodeURIComponent(parts[1]||''));
   viewHome();

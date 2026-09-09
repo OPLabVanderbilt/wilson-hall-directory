@@ -151,7 +151,7 @@ EXTRA_ROOMS = {
 # once the spreadsheet carries them, or the person will appear twice.
 EXTRA_PEOPLE = [
     {"first": "Shaina", "last": "Munin", "role": "Lecturer",
-     "title": "Senior Lecturer", "lab": None},
+     "title": "Senior Lecturer", "lab": None, "rooms": ["503"]},
 ]
 
 # Confirmed spellings. The spreadsheet holds both variants for these people;
@@ -532,7 +532,8 @@ def main():
         people.append({
             "n": name, "s": e["last"], "f": e["first"], "k": None,
             "t": e.get("title"), "r": e.get("role"), "l": e.get("lab"),
-            "m": [], "tbd": True,
+            "m": [r for r in e.get("rooms", []) if r in rooms],
+            "tbd": not e.get("rooms"),
         })
 
     people.sort(key=lambda p: (norm(p["s"]), norm(p["f"])))

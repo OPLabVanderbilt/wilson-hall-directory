@@ -107,6 +107,7 @@ EXCLUDE_PEOPLE = {
     "marcus watson",
     "mckenzie king",
 
+    "saman abbaspoor",       # left, reported 2026-09-09
     # Departures reported 2026-09-09.
     "simon lilburn",
     "jason chow",
@@ -239,7 +240,7 @@ REMOVE_PLACEMENTS = {
     "conor smithson":  ["309"],        # self-reported 2026-09-09, now in the Gauthier lab
     # Reported by Adrian Wong 2026-09-09 (as "Salad", the only occupant of 429).
     # He keeps 043A.
-    "sajad ahmadnabi": ["429"],
+    "sajad ahmadi nebi": ["429"],
 }
 
 # Extra room placements not in the spreadsheet: people who work out of a room the
@@ -298,10 +299,17 @@ SPELLING_LAST = {
     "herculano": "Herculano-Houzel",   # spreadsheet truncates the surname
     "rbiez": "Rbeiz",                  # department roster spelling
     "rbeiz": "Rbeiz",
+    # Confirmed 2026-09-09; the sheet holds a different spelling in each room.
+    "abbspoor":   "Abbaspoor",
+    "ahmadnabi":  "Ahmadi Nebi",
+    "ahmadinabi": "Ahmadi Nebi",
+    "yildrim":    "Yildirim",
+    "yildrem":    "Yildirim",
 }
 SPELLING_FIRST = {
     "jinkyeok": "Jinhyeok",   # department roster spelling
     "toni": "Antonia",        # Antonia Kaczkurkin, self-reported 2026-09-09
+    "anikita": "Ankita",      # Ankita Mohan, confirmed 2026-09-09
 }
 
 # Short forms that will not merge on edit distance alone.
@@ -811,11 +819,28 @@ def main():
     for n in sorted(roomless):
         lines.append(f"           {n}")
     lines.append("")
-    stale = sorted(k for k in EXCLUDE_PEOPLE if k not in {norm(n) for n in excluded_names})
-    if stale:
-        lines.append(f"  ! EXCLUDE_PEOPLE entries matching nobody ({len(stale)}): "
-                     + ", ".join(stale))
-        lines.append("")
+    known = ({norm(p["n"]) for p in people}
+             | {norm(n) for n in excluded_names}
+             | {norm(n) for n in roomless})
+    dead = []
+    for label, keys in (("EXCLUDE_PEOPLE", EXCLUDE_PEOPLE),
+                        ("REMOVE_PLACEMENTS", REMOVE_PLACEMENTS),
+                        ("EXTRA_ROOMS", EXTRA_ROOMS),
+                        ("ROLE_OVERRIDES", ROLE_OVERRIDES),
+                        ("LAB_OVERRIDES", LAB_OVERRIDES),
+                        ("SECOND_LAB", SECOND_LAB),
+                        ("TITLES", TITLES),
+                        ("STAFF_TITLES", STAFF_TITLES)):
+        for k in sorted(keys):
+            if k not in known:
+                dead.append(f"{label}: {k}")
+    lines.append(f"!! CORRECTIONS KEYED ON A NAME THAT MATCHES NOBODY ({len(dead)}):")
+    for x in dead:
+        lines.append(f"   {x}")
+    if dead:
+        lines.append("   Usually a rename: the person is still listed under a new")
+        lines.append("   spelling, so the correction silently stopped applying.")
+    lines.append("")
     missing_rooms = sorted(r for r in EXCLUDE_ROOMS if r not in all_room_nums)
     if missing_rooms:
         lines.append(f"  ! EXCLUDE_ROOMS entries matching no room: {', '.join(missing_rooms)}")

@@ -3,6 +3,9 @@
 A phone-first web directory for visitors entering Wilson Hall. Scan a QR code at the
 entrance, type a name, get a room number.
 
+**Live at <https://oplabvanderbilt.github.io/wilson-hall-directory/>.**
+See `CLAUDE.md` for current state and open items.
+
 ## Files
 
 | File | Role |

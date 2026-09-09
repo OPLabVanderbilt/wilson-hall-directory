@@ -90,6 +90,7 @@ EXCLUDE_PEOPLE = {
     "erin duran",            # left the department
     "randolph blake",        # retired
     "sydnie rathert",        # left 2026-07-02 for DAR; Grants Specialist post being refilled
+    "david schlundt",        # retired
 }
 
 # Standing information that is not a room. These appear in Common spaces and are

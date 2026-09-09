@@ -3,6 +3,11 @@
 *.xlsx
 *.xlsm
 
+# Working documents (the printable QR sign, etc.) -- not part of the site.
+*.pptx
+*.docx
+*.pdf
+
 # Internal data-quality report, not for the web.
 review.txt
 

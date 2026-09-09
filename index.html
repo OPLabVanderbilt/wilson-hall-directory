@@ -347,14 +347,14 @@ function viewHome(){
     ['Post-docs',          'Post-doc'],
     ['Staff',              'Staff']
   ];
+  // No counts on the pills -- they cost a line of wrapping and the number is
+  // shown on the destination screen anyway.
   var html = '<h2>People and Labs</h2><div class="pills">'+
     GROUPS.map(function(g){
-      var n = g[1] ? D.people.filter(function(p){ return inRole(p, g[1]); }).length
-                   : D.people.length;
       var href = g[1] ? '#/role/'+encodeURIComponent(g[1]) : '#/all/people';
-      return '<button class="pill" data-go="'+href+'">'+esc(g[0])+' ('+n+')</button>';
+      return '<button class="pill" data-go="'+href+'">'+esc(g[0])+'</button>';
     }).join('') +
-    '<button class="pill" data-go="#/all/labs">All labs ('+D.labs.length+')</button>'+
+    '<button class="pill" data-go="#/all/labs">All labs</button>'+
     '</div>';
 
   var common = D.rooms.filter(function(r){

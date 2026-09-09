@@ -279,6 +279,9 @@ EXTRA_PEOPLE = [
     {"first": "Andrew",    "last": "Tornatore",    "role": "Grad student", "lab": "Polyn"},
     {"first": "Ella",      "last": "Weeks",        "role": "Grad student", "lab": "Woodman"},
     {"first": "Minghua",   "last": "Zhang",        "role": "Grad student", "lab": "Polyn"},
+    # Confirmed a distinct person from Joanna Wang (staff, 213A) by the incoming-
+    # student list in the 2026-08-06 orientation email.
+    {"first": "Ziqi",      "last": "Wang",         "role": "Grad student", "lab": "Park"},
 
     # Self-reported 2026-09-09. He works across the Wallace and Ramachandran
     # labs; a person carries one lab here, so this records where his desk is.
@@ -293,6 +296,8 @@ SPELLING_LAST = {
     "meuller": "Mueller",          # confirmed: Melina Mueller
     "mueller": "Mueller",
     "herculano": "Herculano-Houzel",   # spreadsheet truncates the surname
+    "rbiez": "Rbeiz",                  # department roster spelling
+    "rbeiz": "Rbeiz",
 }
 SPELLING_FIRST = {
     "jinkyeok": "Jinhyeok",   # department roster spelling
@@ -526,6 +531,18 @@ def edit_le1(a, b):
             return False
     return True
 
+def near(a, b):
+    """Equal, one edit apart, or one adjacent transposition apart."""
+    if edit_le1(a, b):
+        return True
+    if len(a) == len(b):
+        diff = [i for i in range(len(a)) if a[i] != b[i]]
+        if len(diff) == 2 and diff[1] == diff[0] + 1:
+            i, j = diff
+            return a[i] == b[j] and a[j] == b[i]
+    return False
+
+
 class DSU:
     def __init__(self): self.p = {}
     def find(self, x):
@@ -628,9 +645,9 @@ def main():
             same_first = fi == fj or (ni and ni == fj) or (nj and nj == fi)
             if li == lj and same_first:
                 dsu.union(i, j)
-            elif li == lj and edit_le1(fi, fj):
+            elif li == lj and near(fi, fj):
                 dsu.union(i, j); fuzzy.append((keys[i], keys[j], "first-name variant"))
-            elif fi == fj and edit_le1(li, lj):
+            elif fi == fj and near(li, lj):
                 dsu.union(i, j); fuzzy.append((keys[i], keys[j], "last-name variant"))
 
     groups = defaultdict(list)

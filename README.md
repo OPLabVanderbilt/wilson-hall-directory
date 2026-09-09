@@ -31,6 +31,10 @@ affiliation it could not resolve.
   laundry/PPE room, freezer rooms, the veterinary office, cage wash, and lab-service
   rooms are excluded. Publishing exact NHP housing locations on a public URL is an
   avoidable exposure. To change this, set `HIDE_ANIMAL_FACILITY = False` in `build.py`.
+- **Storage rooms.** Any room whose spreadsheet label is `(Storage)` — 107, 108, 109,
+  518, and 314. Controlled by `HIDE_ROOM_KINDS` in `build.py`, matched on the label
+  before friendly relabelling, so a new storage room is caught automatically. Note 314
+  is the department supply room; its room label says Storage, so the rule catches it.
 - **Anyone whose recorded last day has passed.**
 - **Anyone on the `EXCLUDE_PEOPLE` list in `build.py`** — people the spreadsheet still
   lists but who have retired or left with no last-day date to catch them. Add a

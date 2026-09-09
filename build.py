@@ -29,6 +29,13 @@ TODAY = datetime.date(2026, 9, 9)
 # only after a deliberate decision to publish them.
 HIDE_ANIMAL_FACILITY = True
 
+# Room types withheld from the public page regardless of floor. Matched against
+# the label in the spreadsheet's Room Number cell, before any friendly relabelling,
+# so a new "(Storage)" room is caught automatically.
+HIDE_ROOM_KINDS = {
+    "storage",
+}
+
 ANIMAL_ROOM_KINDS = {
     "housing room", "surgery suite", "autoclaves", "food storage",
     "laundry room", "freezer", "veterinary office", "dac breakroom",
@@ -185,7 +192,6 @@ FACILITY_LABELS = {
     "315":  "Mail Room & Department Lounge",
     "117":  "Lactation Room",
     "215":  "Copier Room",
-    "314":  "Supply Room",
 }
 
 ROLE_PATTERNS = [
@@ -413,6 +419,8 @@ def main():
             kind_clean = RE_INTERNAL.sub("", kind).strip(" ,-")
             if HIDE_ANIMAL_FACILITY and norm(kind_clean) in ANIMAL_ROOM_KINDS:
                 continue
+            if norm(kind_clean) in HIDE_ROOM_KINDS:
+                continue
             all_room_nums.add(num)
 
             # Parse the person up front, purely so an EXCLUDE_PEOPLE name is audited
@@ -636,6 +644,7 @@ def main():
         lines.append(f"           {n}")
     lines.append("")
     lines.append(f"animal-facility rooms withheld: {HIDE_ANIMAL_FACILITY}")
+    lines.append(f"room types withheld: {', '.join(sorted(HIDE_ROOM_KINDS))}")
     (HERE / "review.txt").write_text("\n".join(lines), encoding="utf-8")
 
     print("\n".join(lines[:6]))

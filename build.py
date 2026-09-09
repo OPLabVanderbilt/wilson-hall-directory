@@ -431,7 +431,18 @@ LAB_DISPLAY = {
     "CATlab": "CATlab",
     "BRAINS": "BRAINS Lab",
 }
+def lab_parts(pi):
+    """The two PIs in a shared-room label, or None for an ordinary lab."""
+    return [x.strip() for x in pi.split("/")] if "/" in pi else None
+
 def lab_name(pi):
+    # A label naming two PIs is not a joint lab -- there are none in the department.
+    # It is one space the two share, so it reads "Hoffman/Womelsdorf shared space"
+    # rather than inventing a "Hoffman / Womelsdorf Lab" that nobody belongs to and
+    # that showed "0 listed" because every member is recorded under one PI or other.
+    parts = lab_parts(pi)
+    if parts:
+        return "/".join(parts) + " shared space"
     return LAB_DISPLAY.get(pi, f"{pi} Lab")
 
 # The space spreadsheet is read by staff who will not all know the lab acronyms,
@@ -854,7 +865,28 @@ def main():
         for L in (p.get("l"), p.get("l2")):
             if L:
                 labs[L]["people"].append(p["n"])
-    lab_list = [{"n": lab_name(k), "pi": k, "rooms": v["rooms"], "people": sorted(set(v["people"]))}
+    # Each lab row names the faculty member as well as the lab. The directory shows
+    # the name a lab goes by -- OPlab, CATlab, BRAINS Lab -- and a visitor may only
+    # know the professor. LAB_PI already maps those acronyms to a surname; a shared
+    # room label like "Hoffman / Womelsdorf" names both.
+    faculty_by_surname = defaultdict(list)
+    for p_ in people:
+        if p_["r"] in ("Faculty", "Lecturer"):
+            faculty_by_surname[norm(p_["s"])].append(p_["n"])
+
+    def lab_faculty(key):
+        # Resolved here rather than in the page: the acronym-to-surname mapping
+        # lives in this file, and matching on surname in JS would pick up the
+        # wrong person in a lab that has more than one faculty member.
+        names = []
+        for part in key.split("/"):
+            for n in faculty_by_surname.get(norm(lab_pi(part.strip())), []):
+                if n not in names:
+                    names.append(n)
+        return " & ".join(names)
+
+    lab_list = [{"n": lab_name(k), "pi": k, "fac": lab_faculty(k) or None,
+                 "rooms": v["rooms"], "people": sorted(set(v["people"]))}
                 for k, v in sorted(labs.items())]
 
     payload = {

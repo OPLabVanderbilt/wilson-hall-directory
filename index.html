@@ -91,6 +91,10 @@ h2:first-child{margin-top:4px}
 .row .txt{flex:1;min-width:0}
 .row .nm,.row .sub{display:block}
 .row .nm{font-weight:600;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Lab titles may wrap. "Hoffman/Womelsdorf shared space" needs 269px of a 210px
+   column on a 375px phone, and clipping it to "Hoffman/Womelsdorf shar..." loses
+   the word that says what the row is. Rows that already fit are unaffected. */
+.row .nm.wrap{white-space:normal;overflow:visible;text-overflow:clip}
 .row .sub{font-size:13.5px;color:var(--muted);margin-top:1px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rooms{display:flex;gap:5px;flex-shrink:0;justify-content:flex-end}
@@ -186,7 +190,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding:26px 20px 8px
 
 <main id="main" aria-live="polite"></main>
 
-<script src="data.js?v=04217ec9a6"></script>
+<script src="data.js?v=786214a0bb"></script>
 <script>
 (function(){
 "use strict";
@@ -308,6 +312,15 @@ function chips(list, ghost){
     return '<span class="rm'+(ghost?' ghost':'')+'">'+esc(r)+'</span>';
   }).join('') + (list.length>2 ? '<span class="rm ghost">+'+(list.length-2)+'</span>' : '') + '</span>';
 }
+// A lab row shows how many rooms it has, not which two happen to sort first.
+// Room chips cost ~190px of a 375px row and a lab's rooms are spread around the
+// building, so two of them plus "+10" tells a visitor nothing the lab's own page
+// does not show properly. Giving that width back to the text is what lets the
+// faculty name fit without being cut mid-surname.
+function roomCountChip(n){
+  if(!n) return '<span class="rooms"></span>';
+  return '<span class="rooms"><span class="rm ghost">'+n+(n===1?' room':' rooms')+'</span></span>';
+}
 var CHEV = '<svg class="chev" viewBox="0 0 8 13" fill="none" stroke="currentColor" '+
   'stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5L6.5 6.5l-5 5"/></svg>';
 
@@ -318,10 +331,22 @@ function rowPerson(p, i, toks){
     (p.m.length ? chips(p.m) : TBD) + CHEV + '</button>';
 }
 function rowLab(l, i, toks){
+  // The faculty name leads the subtitle: .sub is a single ellipsised line, so on a
+  // narrow phone whatever comes last is what gets cut, and the professor's name is
+  // the part a visitor is more likely to be searching on.
+  //
+  // No floor here. A lab's rooms are often spread over several floors -- 7 of 28
+  // are -- and this row used to show the floor of l.rooms[0] alone, which was
+  // simply wrong for those. The room chips carry the real locations.
+  // A shared space has no members of its own -- everyone in it is recorded under one
+  // PI or the other -- so it would read "0 listed", which invites the reader to think
+  // the space is unused. Show the count only when there is one.
+  var count = l.people.length ? l.people.length+' listed' : '';
+  var sub = (l.fac ? hl(l.fac, toks) : '')+(l.fac && count ? ' · ' : '')+count;
   return '<button class="row" data-go="#/l/'+i+'"><span class="txt">'+
-    '<span class="nm">'+hl(l.n, toks)+'</span>'+
-    '<span class="sub">'+l.people.length+' listed · '+shortFloor(floorOf(l.rooms[0]||''))+'</span>'+
-    '</span>'+chips(l.rooms)+CHEV+'</button>';
+    '<span class="nm wrap">'+hl(l.n, toks)+'</span>'+
+    '<span class="sub">'+sub+'</span>'+
+    '</span>'+roomCountChip(l.rooms.length)+CHEV+'</button>';
 }
 function rowRoom(r, toks, hideFloor){
   var who = r.people.length

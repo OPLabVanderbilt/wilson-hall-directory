@@ -102,6 +102,23 @@ The **directory** shows the name a lab goes by (OPlab, CATlab, BRAINS Lab). The
 **spreadsheet** names the faculty member instead (Gauthier, Palmeri, Kaczkurkin),
 because staff reading it may not know the acronyms. `LAB_PI` maps between them.
 
+Since 2026-09-09 the directory shows **both**: every lab row carries the faculty
+member's full name under the lab name. `build.py` resolves it into a `fac` field on
+each lab, matching `LAB_PI`'s surname against the published faculty. Doing it in the
+build rather than in the page matters — three labs carry an acronym rather than a
+surname, and Chen and Kaas each have more than one faculty member in the lab, so
+surname-matching in JS would pick the wrong person.
+
+**There are no shared labs.** Where the sheet labels a room with two PIs it means
+shared space, and the directory says so: `Hoffman/Womelsdorf shared space`, not a
+joint lab. `lab_name()` does this for any lab key containing `/`. Those entries have
+rooms but no members, so their row shows no people count.
+
+A lab row shows a **room count, not room numbers, and no floor.** Both were actively
+misleading: the floor was that of `rooms[0]` alone, wrong for the 7 of 28 labs whose
+rooms span more than one floor. Dropping the chips is also what made room for the
+faculty name — they cost about 190px of a 375px row.
+
 ## Open items
 
 - **10 people have no room** and show TBD — the incoming graduate students. Whoever

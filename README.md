@@ -133,6 +133,33 @@ Neither map is regenerated automatically — the department page has to be re-ch
 by hand when titles change. `review.txt` reports any `TITLES` key that no longer
 matches a person, and any faculty member with no title.
 
+## Lab rows
+
+Every row for a lab — on **All labs**, in search results, and on a person's page —
+shows the lab name with the faculty member underneath, then a room count.
+
+The faculty name comes from `fac`, computed in `build.py` from `LAB_PI`. It leads the
+subtitle deliberately: `.sub` is a single ellipsised line, so whatever sits last is
+what gets cut, and the professor's name is what a visitor is more likely to know. A
+shared label resolves to both names ("Kari Hoffman & Thilo Womelsdorf").
+
+The row shows `N rooms` rather than room chips, and no floor at all. A lab's rooms are
+scattered — 7 of 28 span more than one floor — so the old floor, taken from `rooms[0]`,
+was wrong for a quarter of them, and two arbitrary room numbers plus "+10" said little.
+The lab's own page lists every room properly.
+
+**There are no shared labs.** A sheet label naming two PIs means one space the two
+share, so it renders as `Hoffman/Womelsdorf shared space`, not as a joint lab. This is
+`lab_name()` in `build.py`, which treats any key containing `/` this way. Such an entry
+has rooms but no members of its own — everyone in it is recorded under one PI or the
+other — so the row omits the people count rather than reading "0 listed", which would
+suggest the space is unused.
+
+A lab title may wrap to a second line (`.nm.wrap`). "Hoffman/Womelsdorf shared space"
+needs 269px of a 210px column on a 375px phone, and clipping it to
+"Hoffman/Womelsdorf shar…" would lose the word saying what the row is. Titles that
+already fit are unaffected.
+
 ## Grouped lab rooms
 
 Empty rooms belonging to one lab on one floor collapse into a single row — the

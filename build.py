@@ -223,6 +223,7 @@ FACILITY_LABELS = {
     "301":  "Department Main Office",
     "301F": "Department Chair",
     "308A": "Vice Chair",
+    "313":  "Grad Student Office",   # the sheet says just "Grad Student" here
     "301AA":"Kitchen",
     "315":  "Mail Room & Department Lounge",
     "117":  "Lactation Room",

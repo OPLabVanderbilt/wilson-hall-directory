@@ -91,6 +91,11 @@ EXCLUDE_PEOPLE = {
     "randolph blake",        # retired
     "sydnie rathert",        # left 2026-07-02 for DAR; Grants Specialist post being refilled
     "david schlundt",        # retired
+    # Departures reported 2026-09-09.
+    "simon lilburn",
+    "jason chow",
+    "jordan gunn",
+    "seth marx",
     # Schlundt lab members, following his retirement. All were listed only in 317.
     "ashley sellers",
     "he xia",

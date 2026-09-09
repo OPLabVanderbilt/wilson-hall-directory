@@ -186,7 +186,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding:26px 20px 8px
 
 <main id="main" aria-live="polite"></main>
 
-<script src="data.js?v=8649be1a4b"></script>
+<script src="data.js?v=ae603b5fc2"></script>
 <script>
 (function(){
 "use strict";
@@ -206,6 +206,13 @@ function hl(s, toks){
   try{
     return out.replace(new RegExp('('+pat+')','gi'), '<mark>$1</mark>');
   }catch(e){ return out; }
+}
+function labName(pi){
+  return (D.labNames && D.labNames[pi]) || (pi + ' Lab');
+}
+function labIndex(pi){
+  for(var i=0;i<D.labs.length;i++) if(D.labs[i].pi === pi) return i;
+  return -1;
 }
 function roomType(n){
   var r = roomOf(n);
@@ -291,7 +298,9 @@ function search(raw){
 /* ---------- renderers ---------- */
 function personSub(p){
   // The department page's title, when there is one, is better than the generic role.
-  return [p.t || p.r, p.l ? p.l + ' Lab' : null].filter(Boolean).join(' · ');
+  return [p.t || p.r,
+          p.l  ? labName(p.l)  : null,
+          p.l2 ? labName(p.l2) : null].filter(Boolean).join(' · ');
 }
 var TBD = '<span class="rooms"><span class="rm ghost">TBD</span></span>';
 function chips(list, ghost){
@@ -362,13 +371,12 @@ function groupRooms(list, keepNums){
 
 function rowGroup(g, toks, hideFloor){
   var nums = g.rooms.map(function(r){ return r.num; });
-  var li = -1;
-  for(var i=0;i<D.labs.length;i++) if(D.labs[i].pi === g.lab){ li = i; break; }
+  var li = labIndex(g.lab);
   var href = li > -1 ? '#/l/'+li : '#/f/'+encodeURIComponent(g.floor);
   var sub = nums.length + ' rooms · ' + nums.join(', ');
   if(!hideFloor) sub = esc(g.floor) + ' · ' + esc(sub); else sub = esc(sub);
   return '<button class="row" data-go="'+href+'"><span class="txt">'+
-    '<span class="nm">'+hl(g.lab + ' Lab', toks)+'</span>'+
+    '<span class="nm">'+hl(labName(g.lab), toks)+'</span>'+
     '<span class="sub">'+sub+'</span></span>'+CHEV+'</button>';
 }
 
@@ -477,9 +485,10 @@ function viewPerson(i){
         }).join('')
       : '<div class="bigroom tbdtile"><b>TBD</b><span>ROOM NOT YET ASSIGNED</span></div>')
     +'</div></div>' +
-    (p.l ? section('Lab', (function(){
-      var li = D.labs.findIndex(function(l){ return l.pi === p.l; });
-      return li>-1 ? rowLab(D.labs[li], li, []) : ''; })()) : '') + fixBtn(true);
+    section(p.l2 ? 'Labs' : 'Lab', [p.l, p.l2].filter(Boolean).map(function(pi){
+      var li = labIndex(pi);
+      return li > -1 ? rowLab(D.labs[li], li, []) : '';
+    }).join('')) + fixBtn(true);
 }
 
 function viewRoom(num){
@@ -488,7 +497,7 @@ function viewRoom(num){
   M.innerHTML =
     '<div class="hero"><div class="nm">'+esc(r.num)+' Wilson Hall</div>'+
     '<div class="meta">'+esc([r.kind, r.floor].filter(Boolean).join(' · '))+'</div>'+
-    (r.lab ? '<span class="tag">'+esc(r.lab)+' Lab</span>' : '') + '</div>' +
+    (r.lab ? '<span class="tag">'+esc(labName(r.lab))+'</span>' : '') + '</div>' +
     section(r.people.length ? 'In this room' : '', r.people.map(function(n){
       var i = D.people.findIndex(function(p){ return p.n===n; });
       return i>-1 ? rowPerson(D.people[i], i, []) : ''; }).join('')) +

@@ -91,6 +91,22 @@ EXCLUDE_PEOPLE = {
     "randolph blake",        # retired
     "sydnie rathert",        # left 2026-07-02 for DAR; Grants Specialist post being refilled
     "david schlundt",        # retired
+    # Reported by Adam Tiesman 2026-09-09: nobody but Ram works in the
+    # Ramachandran lab any more.
+    "adriana schoenhaut",
+    "alejandro tarabillo",
+    "alexander mcleod",
+    "amy stahl",
+    "catherine alek",
+    "chase mackey",
+    "jackson mayfield",
+    "jane burton",
+    "karina jirik",
+    # Same report: still in the Wallace lab, but not housed in Wilson Hall.
+    "henry ong",
+    "marcus watson",
+    "mckenzie king",
+
     # Departures reported 2026-09-09.
     "simon lilburn",
     "jason chow",
@@ -123,6 +139,12 @@ INFO_CARDS = [
                     "washroom wc lavatory loo",
     },
 ]
+
+# Rooms the sheet labels wrongly or not at all. Setting the lab also fixes the
+# room's displayed name, which is derived from it.
+ROOM_LAB_OVERRIDES = {
+    "614A": "Wallace",   # sheet says "Vacant Lab / Formerly Wallace Lab"
+}
 
 # Rooms to withhold: space vacated by a departure and not yet reassigned, where
 # the spreadsheet still carries the former occupant. Anyone left with no room at
@@ -197,6 +219,15 @@ STAFF_TITLES = {
 LAB_OVERRIDES = {
     "yinuo peng":    "Palmeri",   # department roster, 2026-09-09
     "ginni strehle": "Tong",
+    # Both the space sheet ("Ikhwan Jeon (Tong Grad Student)") and the department
+    # roster still say Tong. That is out of date -- confirmed 2026-09-09. Do not
+    # "correct" this back from either source.
+    "ikhwan jeon":   "OPlab",
+}
+
+SECOND_LAB = {
+    "adam tiesman": "Ramachandran",   # self-reported 2026-09-09
+    "ikhwan jeon":  "CATlab",         # confirmed 2026-09-09; see LAB_OVERRIDES
 }
 
 ROLE_OVERRIDES = {
@@ -206,6 +237,9 @@ ROLE_OVERRIDES = {
 # Placements in the spreadsheet that the occupant says are no longer true.
 REMOVE_PLACEMENTS = {
     "conor smithson":  ["309"],        # self-reported 2026-09-09, now in the Gauthier lab
+    # Reported by Adrian Wong 2026-09-09 (as "Salad", the only occupant of 429).
+    # He keeps 043A.
+    "sajad ahmadnabi": ["429"],
 }
 
 # Extra room placements not in the spreadsheet: people who work out of a room the
@@ -233,7 +267,8 @@ EXTRA_PEOPLE = [
     # Only students advised by Wilson Hall faculty; that roster also covers Peabody.
     {"first": "Elton",     "last": "Cross",        "nick": "Ellie",
      "role": "Grad student", "lab": "Gauthier"},
-    {"first": "Adrian",    "last": "Wong",         "role": "Grad student", "lab": "Gauthier"},
+    {"first": "Adrian",    "last": "Wong",         "role": "Grad student", "lab": "Gauthier",
+     "rooms": ["429"]},   # self-reported 2026-09-09, taking over from Sajad AhmadNabi
     {"first": "Francesca", "last": "de Marneffe",  "role": "Grad student", "lab": "Park"},
     {"first": "Alenka",    "last": "Doyle",        "role": "Grad student", "lab": "Woodman"},
     {"first": "Daniel",    "last": "Garcia-Barnett", "role": "Grad student", "lab": "Marois"},
@@ -244,6 +279,11 @@ EXTRA_PEOPLE = [
     {"first": "Andrew",    "last": "Tornatore",    "role": "Grad student", "lab": "Polyn"},
     {"first": "Ella",      "last": "Weeks",        "role": "Grad student", "lab": "Woodman"},
     {"first": "Minghua",   "last": "Zhang",        "role": "Grad student", "lab": "Polyn"},
+
+    # Self-reported 2026-09-09. He works across the Wallace and Ramachandran
+    # labs; a person carries one lab here, so this records where his desk is.
+    {"first": "Adam", "last": "Tiesman", "role": "Grad student",
+     "lab": "Wallace", "rooms": ["614A"]},
 ]
 
 # Confirmed spellings. The spreadsheet holds both variants for these people;
@@ -320,6 +360,15 @@ def parse_room(raw):
         return None, None
     return m.group(1).upper(), (m.group(2) or "").strip()
 
+# How each lab is written out. Most read "<PI> Lab"; these do not.
+LAB_DISPLAY = {
+    "OPlab": "OPlab",
+    "CATlab": "CATlab",
+    "BRAINS": "BRAINS Lab",
+}
+def lab_name(pi):
+    return LAB_DISPLAY.get(pi, f"{pi} Lab")
+
 def canon_lab(name):
     """Fold the spreadsheet's PI-name typos into one spelling."""
     fixes = {
@@ -328,6 +377,8 @@ def canon_lab(name):
         "shaefer": "Schaefer",             "schaefer": "Schaefer",
         "herculano": "Herculano-Houzel",
         "kaczkurkin": "BRAINS",        # the lab goes by BRAINS Lab
+        "gauthier": "OPlab",
+        "palmeri": "CATlab",
     }
     return fixes.get(norm(name), name.strip())
 
@@ -539,6 +590,8 @@ def main():
                 "sort": (FLOOR_ORDER.index(floor) if floor in FLOOR_ORDER else 9,
                          int(re.match(r"\d+", num).group()), num),
             })
+            if num in ROOM_LAB_OVERRIDES:
+                r["lab"] = ROOM_LAB_OVERRIDES[num]
             if lab and not r["lab"]:
                 r["lab"] = lab
             if labs2 and not r.get("lab2"):
@@ -620,7 +673,7 @@ def main():
             labs = sorted({rooms[r]["lab"] for r in rms if rooms.get(r, {}).get("lab")})
         override = LAB_OVERRIDES.get(norm(f"{first} {last}"))
         if override:
-            labs = [override]
+            labs = [canon_lab(override)]
         elif len(labs) > 1:
             conflicts.append((f"{first} {last}", "labs", labs))
         people.append({
@@ -631,6 +684,8 @@ def main():
             "k": nick,
             "r": role,
             "l": labs[0] if labs else None,
+            "l2": canon_lab(SECOND_LAB[norm(f"{first} {last}")])
+                  if norm(f"{first} {last}") in SECOND_LAB else None,
             "m": rms,
         })
 
@@ -640,7 +695,9 @@ def main():
             continue          # the spreadsheet caught up; the entry is redundant
         people.append({
             "n": name, "s": e["last"], "f": e["first"], "k": e.get("nick"),
-            "t": e.get("title"), "r": e.get("role"), "l": e.get("lab"),
+            "t": e.get("title"), "r": e.get("role"),
+            "l": canon_lab(e["lab"]) if e.get("lab") else None,
+            "l2": canon_lab(SECOND_LAB[norm(name)]) if norm(name) in SECOND_LAB else None,
             "m": [r for r in e.get("rooms", []) if r in rooms],
             "tbd": not e.get("rooms"),
         })
@@ -661,7 +718,7 @@ def main():
         # Show the canonical lab name, not whatever the sheet typed: the file has
         # "Herculano Lab" and "Constantindis Lab" for labs named elsewhere in full.
         if r["lab"] and r["num"] not in FACILITY_LABELS:
-            r["kind"] = r["lab"] + " Lab"
+            r["kind"] = lab_name(r["lab"])
         r.pop("lab2", None)
         del r["sort"]
 
@@ -679,9 +736,10 @@ def main():
             if L:
                 labs[L]["rooms"].append(r["num"])
     for p in people:
-        if p["l"]:
-            labs[p["l"]]["people"].append(p["n"])
-    lab_list = [{"n": f"{k} Lab", "pi": k, "rooms": v["rooms"], "people": sorted(set(v["people"]))}
+        for L in (p.get("l"), p.get("l2")):
+            if L:
+                labs[L]["people"].append(p["n"])
+    lab_list = [{"n": lab_name(k), "pi": k, "rooms": v["rooms"], "people": sorted(set(v["people"]))}
                 for k, v in sorted(labs.items())]
 
     payload = {
@@ -690,6 +748,7 @@ def main():
         "people": people,
         "rooms": room_list,
         "labs": lab_list,
+        "labNames": {k: lab_name(k) for k in labs},
         "info": INFO_CARDS,
     }
 

@@ -1,0 +1,5 @@
+# This directory is reached by QR code or direct link, not by search.
+# Keeping it unindexed so a person's office location does not surface
+# in a web search for their name.
+User-agent: *
+Disallow: /

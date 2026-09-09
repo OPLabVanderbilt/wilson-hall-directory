@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#FAF8F5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14120F" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Find people, labs and rooms in Wilson Hall.">
+<!-- Kept out of search results: this page is reached by QR code or direct link,
+     so a person's office location should not surface in a search for their name. -->
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="googlebot" content="noindex, nofollow, noarchive">
+<title>Wilson Hall Directory</title>
+<style>
+:root{
+  --bg:#FAF8F5; --card:#FFF; --ink:#14110E; --muted:#6B635A; --line:#E7E1D8;
+  --chip:#1C1917; --chipink:#FFF; --accent:#8A6A22; --accent-bg:#F4ECD9;
+  --shadow:0 1px 2px rgba(20,17,14,.06),0 8px 24px -12px rgba(20,17,14,.18);
+  --r:14px;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#14120F; --card:#1E1B17; --ink:#F5F1EA; --muted:#A39A8D; --line:#302B24;
+    --chip:#E9C97A; --chipink:#14120F; --accent:#D7B463; --accent-bg:#2A2418;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:transparent;
+  overscroll-behavior-y:none;
+}
+button,input{font:inherit;color:inherit}
+
+/* ---------- header ---------- */
+header{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  padding:max(10px,env(safe-area-inset-top)) 16px 10px;
+  border-bottom:1px solid transparent; transition:border-color .15s;
+}
+header.stuck{border-bottom-color:var(--line)}
+.brandrow{display:flex;align-items:baseline;gap:8px;margin:2px 0 10px}
+.brand{font-size:19px;font-weight:700;letter-spacing:-.02em}
+.brand em{font-style:normal;color:var(--muted);font-weight:500}
+.back{
+  display:none;align-items:center;gap:4px;border:0;background:none;padding:6px 10px 6px 0;
+  margin-left:-4px;color:var(--accent);font-weight:600;font-size:16px;cursor:pointer;
+}
+.back svg{width:16px;height:16px}
+body.detail .back{display:inline-flex}
+body.detail .brandrow .brand{display:none}
+
+.searchwrap{position:relative;display:flex;align-items:center}
+.searchwrap svg.mag{
+  position:absolute;left:14px;width:19px;height:19px;color:var(--muted);pointer-events:none
+}
+#q{
+  width:100%; height:50px; padding:0 44px 0 42px; font-size:17px;
+  background:var(--card); border:1px solid var(--line); border-radius:var(--r);
+  outline:none; box-shadow:var(--shadow);
+}
+#q:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg)}
+#q::placeholder{color:var(--muted)}
+#q::-webkit-search-cancel-button,#q::-webkit-search-decoration{-webkit-appearance:none;display:none}
+#clear{
+  position:absolute;right:6px;display:none;border:0;background:none;cursor:pointer;
+  width:38px;height:38px;border-radius:50%;color:var(--muted);font-size:20px;line-height:1;
+}
+#clear.on{display:block}
+
+/* ---------- layout ---------- */
+main{padding:14px 16px calc(40px + env(safe-area-inset-bottom));max-width:640px;margin:0 auto}
+h2{
+  font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--muted);margin:22px 2px 8px
+}
+h2:first-child{margin-top:4px}
+.list{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  overflow:hidden;box-shadow:var(--shadow)}
+.row{
+  display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  padding:12px 14px;min-height:60px;background:none;border:0;cursor:pointer;
+  border-top:1px solid var(--line);
+}
+.row:first-child{border-top:0}
+.row:active{background:var(--accent-bg)}
+.row .txt{flex:1;min-width:0}
+.row .nm,.row .sub{display:block}
+.row .nm{font-weight:600;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .sub{font-size:13.5px;color:var(--muted);margin-top:1px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rooms{display:flex;gap:5px;flex-shrink:0;justify-content:flex-end}
+.rm{
+  background:var(--chip);color:var(--chipink);font-weight:700;font-size:14px;
+  padding:5px 8px;border-radius:8px;font-variant-numeric:tabular-nums;letter-spacing:-.01em;
+  white-space:nowrap;
+}
+.rm.ghost{background:var(--accent-bg);color:var(--accent)}
+.chev{width:8px;height:13px;color:var(--muted);flex-shrink:0;opacity:.6}
+mark{background:var(--accent-bg);color:inherit;border-radius:3px;padding:0 1px}
+
+/* ---------- detail ---------- */
+.hero{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:18px 16px;box-shadow:var(--shadow);margin-bottom:4px
+}
+.hero .nm{font-size:25px;font-weight:700;letter-spacing:-.025em;line-height:1.15}
+.hero .meta{color:var(--muted);margin-top:6px;font-size:14.5px}
+.tag{
+  display:inline-block;background:var(--accent-bg);color:var(--accent);font-size:12px;
+  font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;
+  border-radius:6px;margin-top:10px
+}
+.bigrooms{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.bigroom{
+  display:flex;flex-direction:column;gap:2px;background:var(--chip);color:var(--chipink);
+  border:0;border-radius:12px;padding:11px 14px;cursor:pointer;text-align:left;min-width:96px
+}
+.bigroom.tbdtile{background:var(--accent-bg);color:var(--accent);cursor:default;min-width:auto}
+.bigroom b{font-size:23px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.bigroom span{font-size:11.5px;opacity:.78;font-weight:600;letter-spacing:.03em}
+.empty{color:var(--muted);text-align:center;padding:44px 20px;line-height:1.6}
+.empty b{display:block;color:var(--ink);font-size:17px;margin-bottom:4px}
+footer{color:var(--muted);font-size:12px;text-align:center;padding:26px 20px 8px;line-height:1.6}
+.pill{
+  display:inline-flex;align-items:center;justify-content:center;padding:9px 14px;
+  background:var(--card);border:1px solid var(--line);border-radius:999px;font-size:14.5px;
+  font-weight:600;cursor:pointer;box-shadow:var(--shadow)
+}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.cta{
+  display:flex;align-items:center;justify-content:center;gap:9px;width:100%;
+  min-height:52px;margin-top:14px;padding:12px 16px;text-decoration:none;
+  background:var(--card);border:1.5px solid var(--accent);border-radius:var(--r);
+  color:var(--accent);font-weight:650;font-size:15.5px;box-shadow:var(--shadow);
+}
+.cta:active{background:var(--accent-bg)}
+.cta svg{width:17px;height:17px;flex-shrink:0}
+.cta.slim{min-height:46px;font-size:14.5px;font-weight:600;
+  border-width:1px;border-color:var(--line);color:var(--muted)}
+.cta.slim:active{border-color:var(--accent);color:var(--accent)}
+.pill:active{background:var(--accent-bg)}
+@media (min-width:600px){ .hero .nm{font-size:28px} }
+</style>
+</head>
+<body>
+
+<header id="hdr">
+  <div class="brandrow">
+    <button class="back" id="back" aria-label="Back">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2"
+           stroke-linecap="round" stroke-linejoin="round"><path d="M10 3L5 8l5 5"/></svg>
+      Back
+    </button>
+    <span class="brand">Wilson Hall <em>Directory</em></span>
+  </div>
+  <div class="searchwrap">
+    <svg class="mag" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="9" cy="9" r="6"/><path d="M13.5 13.5L18 18" stroke-linecap="round"/>
+    </svg>
+    <input id="q" type="search" placeholder="Name, lab, or room number"
+      inputmode="search" enterkeyhint="search" autocomplete="off"
+      autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Search the directory">
+    <button id="clear" aria-label="Clear search">&times;</button>
+  </div>
+</header>
+
+<main id="main" aria-live="polite"></main>
+
+<script src="data.js"></script>
+<script>
+(function(){
+"use strict";
+var D = window.WH_DATA, M = document.getElementById('main'),
+    Q = document.getElementById('q'), CLR = document.getElementById('clear'),
+    HDR = document.getElementById('hdr');
+
+/* ---------- helpers ---------- */
+function nm(s){ return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
+function esc(s){ return (s||'').replace(/[&<>"]/g, function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function hl(s, toks){
+  var out = esc(s); if(!toks.length) return out;
+  var pat = toks.filter(Boolean).map(function(t){
+    return t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }).join('|');
+  if(!pat) return out;
+  try{
+    return out.replace(new RegExp('('+pat+')','gi'), '<mark>$1</mark>');
+  }catch(e){ return out; }
+}
+function roomOf(n){ for(var i=0;i<D.rooms.length;i++) if(D.rooms[i].num===n) return D.rooms[i]; return null; }
+function floorOf(n){ var r = roomOf(n); return r ? r.floor : ''; }
+function shortFloor(f){
+  if(f==='Basement') return 'Basement';
+  var m = /^(\d)/.exec(f); return m ? 'Floor '+m[1] : f;
+}
+
+/* precomputed search haystacks */
+D.people.forEach(function(p){
+  p._h = nm([p.n, p.k||'', p.l||'', p.r||'', p.t||''].join(' '));
+  p._l = nm(p.s); p._f = nm(p.f);
+});
+D.labs.forEach(function(l){ l._h = nm(l.n + ' ' + l.people.join(' ')); l._p = nm(l.pi); });
+D.rooms.forEach(function(r){
+  r._h = nm([r.num, r.kind||'', r.lab||'', r.floor, r.people.join(' ')].join(' '));
+});
+
+/* ---------- search ---------- */
+function search(raw){
+  var toks = nm(raw).split(/\s+/).filter(Boolean);
+  if(!toks.length) return null;
+
+  function scoreAll(items, fn){
+    var out = [];
+    items.forEach(function(it){
+      var total = 0;
+      for(var i=0;i<toks.length;i++){
+        var s = fn(it, toks[i]);
+        if(!s) return;                 // every token must hit something
+        total += s;
+      }
+      out.push({it:it, s:total});
+    });
+    return out.sort(function(a,b){ return b.s - a.s; }).map(function(x){ return x.it; });
+  }
+
+  var people = scoreAll(D.people, function(p,t){
+    if(p._l.indexOf(t)===0) return 100;
+    if(p._f.indexOf(t)===0) return 80;
+    if(p.m.some(function(r){ return nm(r)===t; })) return 90;
+    if(new RegExp('\\b'+t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).test(p._h)) return 60;
+    if(p._h.indexOf(t)>-1) return 35;
+    return 0;
+  });
+
+  var labs = scoreAll(D.labs, function(l,t){
+    if(l._p.indexOf(t)===0) return 150;
+    if(l._h.indexOf(t)>-1) return 50;
+    if(l.rooms.some(function(r){ return nm(r)===t; })) return 90;
+    return 0;
+  });
+
+  var rooms = scoreAll(D.rooms, function(r,t){
+    var n = nm(r.num);
+    if(n===t) return 220;
+    if(n.indexOf(t)===0) return 160;
+    if(nm(r.kind||'').indexOf(t)>-1) return 45;
+    if(r._h.indexOf(t)>-1) return 20;
+    return 0;
+  });
+
+  return {toks:toks, people:people, labs:labs, rooms:rooms};
+}
+
+/* ---------- renderers ---------- */
+function personSub(p){
+  // The department page's title, when there is one, is better than the generic role.
+  return [p.t || p.r, p.l ? p.l + ' Lab' : null].filter(Boolean).join(' · ');
+}
+var TBD = '<span class="rooms"><span class="rm ghost">TBD</span></span>';
+function chips(list, ghost){
+  return '<span class="rooms">' + list.slice(0,2).map(function(r){
+    return '<span class="rm'+(ghost?' ghost':'')+'">'+esc(r)+'</span>';
+  }).join('') + (list.length>2 ? '<span class="rm ghost">+'+(list.length-2)+'</span>' : '') + '</span>';
+}
+var CHEV = '<svg class="chev" viewBox="0 0 8 13" fill="none" stroke="currentColor" '+
+  'stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5L6.5 6.5l-5 5"/></svg>';
+
+function rowPerson(p, i, toks){
+  return '<button class="row" data-go="#/p/'+i+'"><span class="txt">'+
+    '<span class="nm">'+hl(p.n, toks)+(p.k?' <span style="color:var(--muted);font-weight:400">('+esc(p.k)+')</span>':'')+'</span>'+
+    '<span class="sub">'+hl(personSub(p), toks)+'</span></span>'+
+    (p.m.length ? chips(p.m) : TBD) + CHEV + '</button>';
+}
+function rowLab(l, i, toks){
+  return '<button class="row" data-go="#/l/'+i+'"><span class="txt">'+
+    '<span class="nm">'+hl(l.n, toks)+'</span>'+
+    '<span class="sub">'+l.people.length+' listed · '+shortFloor(floorOf(l.rooms[0]||''))+'</span>'+
+    '</span>'+chips(l.rooms)+CHEV+'</button>';
+}
+function rowRoom(r, toks, hideFloor){
+  var who = r.people.length
+    ? r.people.slice(0,3).join(', ') + (r.people.length>3 ? ' +'+(r.people.length-3) : '')
+    : '';
+  var sub = who ? hl(who, toks) : '';
+  if(!hideFloor) sub += (sub ? ' · ' : '') + esc(r.floor);
+  else if(!sub)  sub = '<span style="opacity:.7">No one listed</span>';
+  return '<button class="row" data-go="#/r/'+encodeURIComponent(r.num)+'"><span class="txt">'+
+    '<span class="nm">'+hl(r.kind || 'Room '+r.num, toks)+'</span>'+
+    '<span class="sub">'+sub+'</span>'+
+    '</span>'+chips([r.num])+CHEV+'</button>';
+}
+var FORM_URL = 'https://redcap.link/ul4x2a5q';
+function fixBtn(slim){
+  return '<a class="cta'+(slim?' slim':'')+'" href="'+FORM_URL+'" target="_blank" rel="noopener">'+
+    '<svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.9" '+
+    'stroke-linecap="round" stroke-linejoin="round">'+
+    '<path d="M11.5 2.5l4 4L6 16H2v-4z"/><path d="M10 4l4 4"/></svg>'+
+    (slim ? 'Something wrong? Request a correction' : 'Request a change or correction')+'</a>';
+}
+function section(title, html){
+  return html ? '<h2>'+title+'</h2><div class="list">'+html+'</div>' : '';
+}
+
+/* ---------- views ---------- */
+function viewHome(){
+  document.body.classList.remove('detail');
+
+  var GROUPS = [
+    ['All',                null],
+    ['Faculty',            'Faculty'],
+    ['Graduate students',  'Grad student'],
+    ['Post-docs',          'Post-doc'],
+    ['Staff',              'Staff']
+  ];
+  var html = '<h2>People and Labs</h2><div class="pills">'+
+    GROUPS.map(function(g){
+      var n = g[1] ? D.people.filter(function(p){ return inRole(p, g[1]); }).length
+                   : D.people.length;
+      var href = g[1] ? '#/role/'+encodeURIComponent(g[1]) : '#/all/people';
+      return '<button class="pill" data-go="'+href+'">'+esc(g[0])+' ('+n+')</button>';
+    }).join('') +
+    '<button class="pill" data-go="#/all/labs">All labs ('+D.labs.length+')</button>'+
+    '</div>';
+
+  var common = D.rooms.filter(function(r){
+    return r.floor !== 'Basement' &&
+      /Main Office|Chair|Mail Room|Lactation|Conference Room|Lounge|Copier/i
+      .test(r.kind||''); })
+    .sort(function(a,b){
+      // Main Office, then Chair, then Vice Chair; everything else keeps room order.
+      function rank(r){
+        if(/Main Office/i.test(r.kind))  return 0;
+        if(/^Department Chair/i.test(r.kind)) return 1;
+        if(/Vice Chair/i.test(r.kind))   return 2;
+        return 3;
+      }
+      return rank(a) - rank(b);
+    });
+  html += section('Common spaces', common.map(function(r){ return rowRoom(r, []); }).join(''));
+
+  html += '<h2>Browse by floor</h2><div class="pills">' + D.floors.map(function(f){
+    return '<button class="pill" data-go="#/f/'+encodeURIComponent(f)+'">'+esc(f)+'</button>';
+  }).join('') + '</div>';
+
+  html += '<h2>Out of date?</h2>' + fixBtn(false);
+  html += '<footer>Generated from departmental space records.<br>Last updated '+
+    esc(D.updated)+'.</footer>';
+  M.innerHTML = html;
+}
+
+function viewResults(res){
+  document.body.classList.remove('detail');
+  var t = res.toks;
+  var html =
+    section('People',  res.people.slice(0,40).map(function(p){ return rowPerson(p, D.people.indexOf(p), t); }).join('')) +
+    section('Labs',    res.labs.slice(0,10).map(function(l){ return rowLab(l, D.labs.indexOf(l), t); }).join('')) +
+    section('Rooms',   res.rooms.slice(0,25).map(function(r){ return rowRoom(r, t); }).join(''));
+  M.innerHTML = html
+    ? html + fixBtn(true)
+    : '<div class="empty"><b>No match</b>Try a last name, a lab name, or a room number like 220.</div>'
+      + fixBtn(false);
+}
+
+function viewPerson(i){
+  var p = D.people[i]; if(!p) return viewHome();
+  document.body.classList.add('detail');
+  M.innerHTML =
+    '<div class="hero"><div class="nm">'+esc(p.n)+
+      (p.k?' <span style="color:var(--muted);font-weight:500">('+esc(p.k)+')</span>':'')+'</div>'+
+    (personSub(p) ? '<div class="meta">'+esc(personSub(p))+'</div>' : '') +
+    '<div class="bigrooms">'+ (p.m.length
+      ? p.m.map(function(r){
+          return '<button class="bigroom" data-go="#/r/'+encodeURIComponent(r)+'">'+
+            '<b>'+esc(r)+'</b><span>'+esc(shortFloor(floorOf(r)).toUpperCase())+'</span></button>';
+        }).join('')
+      : '<div class="bigroom tbdtile"><b>TBD</b><span>ROOM NOT YET ASSIGNED</span></div>')
+    +'</div></div>' +
+    (p.l ? section('Lab', (function(){
+      var li = D.labs.findIndex(function(l){ return l.pi === p.l; });
+      return li>-1 ? rowLab(D.labs[li], li, []) : ''; })()) : '') + fixBtn(true);
+}
+
+function viewRoom(num){
+  var r = roomOf(num); if(!r) return viewHome();
+  document.body.classList.add('detail');
+  M.innerHTML =
+    '<div class="hero"><div class="nm">'+esc(r.num)+' Wilson Hall</div>'+
+    '<div class="meta">'+esc([r.kind, r.floor].filter(Boolean).join(' · '))+'</div>'+
+    (r.lab ? '<span class="tag">'+esc(r.lab)+' Lab</span>' : '') + '</div>' +
+    section(r.people.length ? 'In this room' : '', r.people.map(function(n){
+      var i = D.people.findIndex(function(p){ return p.n===n; });
+      return i>-1 ? rowPerson(D.people[i], i, []) : ''; }).join('')) +
+    (r.people.length ? '' : '<div class="empty">No individual assignments listed for this room.</div>')
+    + fixBtn(true);
+}
+
+function viewLab(i){
+  var l = D.labs[i]; if(!l) return viewHome();
+  document.body.classList.add('detail');
+  M.innerHTML =
+    '<div class="hero"><div class="nm">'+esc(l.n)+'</div>'+
+    '<div class="meta">'+l.people.length+' people · '+l.rooms.length+' rooms</div>'+
+    '<div class="bigrooms">'+ l.rooms.slice(0,8).map(function(r){
+      return '<button class="bigroom" data-go="#/r/'+encodeURIComponent(r)+'">'+
+        '<b>'+esc(r)+'</b><span>'+esc(shortFloor(floorOf(r)).toUpperCase())+'</span></button>';
+    }).join('') +'</div></div>' +
+    section('Members', l.people.map(function(n){
+      var pi = D.people.findIndex(function(p){ return p.n===n; });
+      return pi>-1 ? rowPerson(D.people[pi], pi, []) : ''; }).join('')) + fixBtn(true);
+}
+
+function viewFloor(f){
+  document.body.classList.add('detail');
+  var rs = D.rooms.filter(function(r){ return r.floor === f; });
+  M.innerHTML = '<div class="hero"><div class="nm">'+esc(f)+'</div>'+
+    '<div class="meta">'+rs.length+' rooms listed</div></div>' +
+    section('Rooms', rs.map(function(r){ return rowRoom(r, [], true); }).join('')) + fixBtn(true);
+}
+
+// A filter button may cover more than one recorded role. Lecturers are teaching
+// faculty, so they sit under Faculty -- but each person keeps their precise role
+// on screen ("Lecturer"), which is more informative than flattening it.
+var ROLE_SETS = {
+  'Faculty':      ['Faculty', 'Lecturer'],
+  'Grad student': ['Grad student'],
+  'Post-doc':     ['Post-doc'],
+  'Staff':        ['Staff']
+};
+function inRole(p, key){
+  var set = ROLE_SETS[key] || [key];
+  return set.indexOf(p.r) > -1;
+}
+var ROLE_TITLES = {
+  'Faculty':'Faculty', 'Grad student':'Graduate students',
+  'Post-doc':'Post-docs', 'Staff':'Staff', 'Student':'Students', 'Lecturer':'Lecturers'
+};
+function viewRole(role){
+  document.body.classList.add('detail');
+  var list = D.people.map(function(p,i){ return [p,i]; })
+                     .filter(function(x){ return inRole(x[0], role); });
+  M.innerHTML = '<div class="hero"><div class="nm">'+esc(ROLE_TITLES[role]||role)+'</div>'+
+    '<div class="meta">'+list.length+' listed</div></div>' +
+    (list.length
+      ? section('A\u2013Z', list.map(function(x){ return rowPerson(x[0], x[1], []); }).join(''))
+      : '<div class="empty">No one listed.</div>') + fixBtn(true);
+}
+function viewAll(kind){
+  document.body.classList.add('detail');
+  if(kind==='labs'){
+    M.innerHTML = '<div class="hero"><div class="nm">All labs</div></div>' +
+      section('Labs', D.labs.map(function(l,i){ return rowLab(l,i,[]); }).join('')) + fixBtn(true);
+  } else {
+    M.innerHTML = '<div class="hero"><div class="nm">All people</div>'+
+      '<div class="meta">'+D.people.length+' listed</div></div>' +
+      section('A–Z', D.people.map(function(p,i){ return rowPerson(p,i,[]); }).join('')) + fixBtn(true);
+  }
+}
+
+/* ---------- routing ---------- */
+function route(){
+  var h = location.hash.replace(/^#\/?/, '');
+  window.scrollTo(0,0);
+  if(!h){ Q.value ? viewResults(search(Q.value)) : viewHome(); return; }
+  var parts = h.split('/');
+  if(parts[0]==='p') return viewPerson(+parts[1]);
+  if(parts[0]==='l') return viewLab(+parts[1]);
+  if(parts[0]==='r') return viewRoom(decodeURIComponent(parts[1]||''));
+  if(parts[0]==='f') return viewFloor(decodeURIComponent(parts[1]||''));
+  if(parts[0]==='all') return viewAll(parts[1]);
+  if(parts[0]==='role') return viewRole(decodeURIComponent(parts[1]||''));
+  viewHome();
+}
+
+M.addEventListener('click', function(e){
+  var b = e.target.closest('[data-go]');
+  if(b){ Q.blur(); location.hash = b.getAttribute('data-go'); }
+});
+document.getElementById('back').addEventListener('click', function(){
+  if(history.length > 1) history.back(); else location.hash = '';
+});
+
+var t;
+Q.addEventListener('input', function(){
+  CLR.classList.toggle('on', !!Q.value);
+  clearTimeout(t);
+  t = setTimeout(function(){
+    if(location.hash){ history.replaceState(null,'','#'); }
+    Q.value ? viewResults(search(Q.value)) : viewHome();
+    if(window.scrollY > 0) window.scrollTo(0,0);
+  }, 60);
+});
+Q.addEventListener('keydown', function(e){ if(e.key==='Enter') Q.blur(); });
+CLR.addEventListener('click', function(){
+  Q.value=''; CLR.classList.remove('on'); location.hash=''; viewHome(); Q.focus();
+});
+window.addEventListener('hashchange', route);
+window.addEventListener('scroll', function(){
+  HDR.classList.toggle('stuck', window.scrollY > 4);
+}, {passive:true});
+
+route();
+})();
+</script>
+</body>
+</html>

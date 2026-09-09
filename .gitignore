@@ -1,0 +1,10 @@
+# Never publish the source spreadsheet: its Notes column holds
+# termination dates and internal space-assignment history.
+*.xlsx
+*.xlsm
+
+# Internal data-quality report, not for the web.
+review.txt
+
+.DS_Store
+.claude/

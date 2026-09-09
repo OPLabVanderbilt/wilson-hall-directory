@@ -123,6 +123,18 @@ mark{background:var(--accent-bg);color:inherit;border-radius:3px;padding:0 1px}
 .bigroom.tbdtile{background:var(--accent-bg);color:var(--accent);cursor:default;min-width:auto}
 .bigroom b{font-size:23px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .bigroom span{font-size:11.5px;opacity:.78;font-weight:600;letter-spacing:.03em}
+details.more{border-top:1px solid var(--line)}
+details.more > summary{
+  display:flex;align-items:center;gap:12px;padding:12px 14px;min-height:56px;
+  cursor:pointer;list-style:none;font-weight:600;color:var(--accent);
+}
+details.more > summary::-webkit-details-marker{display:none}
+details.more > summary:active{background:var(--accent-bg)}
+details.more > summary .txt{flex:1}
+details.more > summary .cnt{color:var(--muted);font-weight:500}
+details.more .chev{transition:transform .18s}
+details.more[open] > summary .chev{transform:rotate(90deg)}
+details.more .row:first-child{border-top:1px solid var(--line)}
 .prose{font-size:16.5px;line-height:1.55;margin:14px 0 0}
 .prose p{margin:0 0 10px}
 .prose p:last-child{margin-bottom:0}
@@ -359,13 +371,25 @@ function viewHome(){
       }
       return rank(a) - rank(b);
     });
-  var lead = common.filter(function(r){
-        return /Main Office|^Department Chair|Vice Chair/i.test(r.kind); }),
-      rest = common.filter(function(r){ return lead.indexOf(r) < 0; });
+  // Everything a visitor at the front door is most likely to want, then the rest
+  // folded away so the home screen stays short on a phone.
+  var PRIMARY = /Main Office|^Department Chair|Vice Chair|Lactation/i;
+  var lead = common.filter(function(r){ return PRIMARY.test(r.kind); }),
+      rest = common.filter(function(r){ return !PRIMARY.test(r.kind); });
+
+  // Lactation Room sits after the info cards, the rest of the lead before them.
+  var top  = lead.filter(function(r){ return !/Lactation/i.test(r.kind); }),
+      lact = lead.filter(function(r){ return  /Lactation/i.test(r.kind); });
+
   html += section('Common spaces',
-    lead.map(function(r){ return rowRoom(r, []); }).join('') +
+    top.map(function(r){ return rowRoom(r, []); }).join('') +
     (D.info||[]).map(function(c){ return rowInfo(c, []); }).join('') +
-    rest.map(function(r){ return rowRoom(r, []); }).join(''));
+    lact.map(function(r){ return rowRoom(r, []); }).join('') +
+    (rest.length
+      ? '<details class="more"><summary><span class="txt">Other common spaces</span>'+
+        '<span class="cnt">'+rest.length+'</span>'+CHEV+'</summary>'+
+        rest.map(function(r){ return rowRoom(r, []); }).join('')+'</details>'
+      : ''));
 
   html += '<h2>Browse by floor</h2><div class="pills">' + D.floors.map(function(f){
     return '<button class="pill" data-go="#/f/'+encodeURIComponent(f)+'">'+esc(f)+'</button>';

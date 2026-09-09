@@ -50,8 +50,11 @@ visitor looking for a person assigned there needs the number.
 The home screen runs **People and Labs**, then **Common spaces**, then
 **Browse by floor**.
 
-**Common spaces** lists the Department Main Office, then the Chair, then the Vice
-Chair, then any info cards, then the remaining rooms in room-number order.
+**Common spaces** shows only what someone at the front door most likely wants —
+Main Office, Chair, Vice Chair, Restrooms, Lactation Room — and folds the rest into
+an expandable "Other common spaces". The `PRIMARY` regex in `viewHome()` decides
+which rooms stay visible; everything else in the section collapses. Search is
+unaffected: a collapsed room still appears in results.
 
 `INFO_CARDS` in `build.py` holds standing guidance that is not a room — currently
 the restrooms. Each card has a `title`, a one-line `sub`, a `body` (one string per

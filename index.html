@@ -186,7 +186,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding:26px 20px 8px
 
 <main id="main" aria-live="polite"></main>
 
-<script src="data.js"></script>
+<script src="data.js?v=e0c548e516"></script>
 <script>
 (function(){
 "use strict";
@@ -311,8 +311,10 @@ function rowRoom(r, toks, hideFloor){
     ? r.people.slice(0,3).join(', ') + (r.people.length>3 ? ' +'+(r.people.length-3) : '')
     : '';
   var sub = who ? hl(who, toks) : '';
+  // Rooms that survive the build with nobody in them are facilities -- a
+  // conference room or a lounge -- so an empty subtitle reads better than a
+  // note saying nobody is there.
   if(!hideFloor) sub += (sub ? ' · ' : '') + esc(r.floor);
-  else if(!sub)  sub = '<span style="opacity:.7">No one listed</span>';
   return '<button class="row" data-go="#/r/'+encodeURIComponent(r.num)+'"><span class="txt">'+
     '<span class="nm">'+hl(r.kind || 'Room '+r.num, toks)+'</span>'+
     '<span class="sub">'+sub+'</span>'+

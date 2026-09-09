@@ -35,10 +35,11 @@ affiliation it could not resolve.
   518, and 314. Controlled by `HIDE_ROOM_KINDS` in `build.py`, matched on the label
   before friendly relabelling, so a new storage room is caught automatically. Note 314
   is the department supply room; its room label says Storage, so the rule catches it.
-- **Empty offices.** A room with nobody in it whose label matches `HIDE_WHEN_EMPTY`
-  in `build.py` (`office` or `vacant`) is dropped after occupancy is worked out —
-  an empty office tells a visitor nothing. Empty *lab* rooms are kept, because
-  "whose lab is 023?" is still a real question; the page groups those instead.
+- **Empty offices, vacant rooms, and unlabelled rooms.** A room with nobody in it
+  is dropped if its label matches `HIDE_WHEN_EMPTY` in `build.py` (`office` or
+  `vacant`) or has no label at all. Empty *lab* rooms are kept, because "whose lab
+  is 023?" is still a real question; the page groups those instead. Facilities —
+  conference rooms, lounges, the kitchen — are kept and simply show no occupant.
 - **Anyone whose recorded last day has passed.**
 - **Anyone on the `EXCLUDE_PEOPLE` list in `build.py`** — people the spreadsheet still
   lists but who have retired or left with no last-day date to catch them. Add a
@@ -116,6 +117,17 @@ number the reader actually typed is never folded away.
 
 Room labels for lab rooms are rewritten to the canonical lab name during the build,
 so the sheet's "Herculano Lab" and "Constantindis Lab" both display correctly.
+
+## Cache
+
+GitHub Pages serves everything with `max-age=600`, and caches `index.html` and
+`data.js` independently — so without care a reader can get a new page with a
+ten-minute-old dataset. `build.py` therefore stamps a content hash onto the script
+URL (`data.js?v=<hash>`), which changes whenever the data does. **Do not remove that
+stamp or hand-edit it**; the build rewrites it and warns if it cannot.
+
+The page itself can still be up to ten minutes stale after a push. That is a Pages
+setting and cannot be changed from the repo.
 
 ## Corrections
 

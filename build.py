@@ -129,6 +129,9 @@ EXCLUDE_ROOMS = {
     "611B", "611BA", "611BB", "611BC",
     # Schlundt lab, closed on his retirement.
     "317", "318",
+    # Kaczkurkin reports 2026-09-09 that her lab is 210, not 205. What 205 is
+    # now is unknown, so it is withheld rather than shown as her lab.
+    "205",
 }
 
 # Titles from https://as.vanderbilt.edu/psychology/faculty/ (retrieved 2026-09-09).
@@ -182,10 +185,24 @@ STAFF_TITLES = {
     "aubrey smith":         "Grants Manager",
 }
 
+# Corrections reported through the REDCap form, applied on top of the spreadsheet.
+# Each entry records who asked and when, so a later spreadsheet update can be
+# checked against them.
+ROLE_OVERRIDES = {
+    "conor smithson": "Post-doc",      # self-reported 2026-09-09
+}
+
+# Placements in the spreadsheet that the occupant says are no longer true.
+REMOVE_PLACEMENTS = {
+    "conor smithson":  ["309"],        # self-reported 2026-09-09, now in the Gauthier lab
+}
+
 # Extra room placements not in the spreadsheet: people who work out of a room the
 # sheet assigns to someone else, and whom a visitor would look for there.
 EXTRA_ROOMS = {
     "savannah crutchfield": ["301"],   # Senior Administrative Officer, in the main office
+    "sohee park":          ["525"],    # self-reported 2026-09-09: office is 525
+    "toni kaczkurkin":     ["210"],    # self-reported 2026-09-09: lab is 210, not 205
 }
 
 # People who belong in the directory but have no room in the spreadsheet yet.
@@ -194,6 +211,10 @@ EXTRA_ROOMS = {
 EXTRA_PEOPLE = [
     {"first": "Shaina", "last": "Munin", "role": "Lecturer",
      "title": "Senior Lecturer", "lab": None, "rooms": ["503"]},
+    # Her only spreadsheet room was 205, withheld now that Kaczkurkin has said
+    # the lab is 210. Without this entry she would disappear from the directory.
+    {"first": "Leighton", "last": "Durham", "role": "Grad student",
+     "lab": "Kaczkurkin", "rooms": ["210"]},
 ]
 
 # Confirmed spellings. The spreadsheet holds both variants for these people;
@@ -544,27 +565,35 @@ def main():
             if pp["role"] is None and norm(pp["last"]) in pi_surnames:
                 pp["role"] = "Faculty"
         best = min((p for p, _ in members), key=lambda p: ROLE_RANK.get(p["role"], 9))
+        role = ROLE_OVERRIDES.get(norm(f"{best['first']} {best['last']}"), best["role"])
         name_counts = defaultdict(int)
         for p, _ in members:
             name_counts[(p["first"], p["last"])] += 1
         (first, last), _ = max(name_counts.items(), key=lambda kv: kv[1])
         nick = next((p["nick"] for p, _ in members if p["nick"]), None)
-        labs = sorted({p["lab"] for p, _ in members if p["lab"]})
-        if len(labs) > 1:
-            conflicts.append((f"{first} {last}", "labs", labs))
         extra = EXTRA_ROOMS.get(norm(f"{first} {last}"), [])
         rms = sorted({r for _, r in members if r in rooms} | {r for r in extra if r in rooms},
                      key=lambda r: rooms[r]["sort"])
+        drop = set(REMOVE_PLACEMENTS.get(norm(f"{first} {last}"), []))
+        rms = [r for r in rms if r not in drop]
         if not rms:
             roomless.append(f"{first} {last}")
             continue
+
+        labs = sorted({p["lab"] for p, _ in members if p["lab"]})
+        if not labs:
+            # A lab attribution can be lost when the room it came from is
+            # withheld, so fall back to the labs of the rooms actually occupied.
+            labs = sorted({rooms[r]["lab"] for r in rms if rooms.get(r, {}).get("lab")})
+        if len(labs) > 1:
+            conflicts.append((f"{first} {last}", "labs", labs))
         people.append({
             "n": f"{first} {last}",
             "t": TITLES.get(norm(f"{first} {last}"))
                  or STAFF_TITLES.get(norm(f"{first} {last}")),
             "s": last, "f": first,
             "k": nick,
-            "r": best["role"],
+            "r": role,
             "l": labs[0] if labs else None,
             "m": rms,
         })

@@ -40,12 +40,29 @@ HIDE_ROOM_KINDS = {
 # kinds are dropped after occupancy is worked out. Lab rooms are NOT included:
 # an empty lab room still answers "whose lab is 023?", and those are grouped by
 # floor in the page instead.
+#
+# Revisited 2026-09-09: dropping every empty room was tried and reversed the same
+# day. Empty labs stay, empty offices go. Do not widen this to lab rooms.
 HIDE_WHEN_EMPTY = re.compile(r"office|vacant", re.I)
+
+# ANIMAL_ROOM_KINDS below is matched exactly, so a label that is renamed or newly
+# added in the spreadsheet -- "Necropsy", "Housing Room 2", "Quarantine" -- would be
+# published with nothing to notice it. This pattern is the safety net: any label that
+# survives to the public page and still reads like animal-facility space is reported
+# in review.txt, the same way a stale correction key is. It only warns; widen
+# ANIMAL_ROOM_KINDS to actually withhold the room.
+ANIMAL_SMELL = re.compile(
+    r"animal|whaf|\bdac\b|vivar|primate|\bnhp\b|monkey|housing|surger|"
+    r"necrops|quarantin|autoclav|laundry|freezer|veterinar|food storage|"
+    r"lab service|perfusion|husbandry|cage wash", re.I)
 
 ANIMAL_ROOM_KINDS = {
     "housing room", "surgery suite", "autoclaves", "food storage",
     "laundry room", "freezer", "veterinary office", "dac breakroom",
     "lab service", "kaas personnel/microscope",
+    # Circulation space inside the animal facility; its own cell reads "Corridor
+    # within WHAF". Withheld 2026-09-09 for the same reason as the rooms it serves.
+    "whaf corridor",
 }
 
 # --- Text scrubbing ----------------------------------------------------------
@@ -125,7 +142,7 @@ EXCLUDE_PEOPLE = {
 
     "chrissy suell",         # no longer at Vanderbilt, reported 2026-09-09
 
-    # Reported 2026-09-09: no longer in the Constantinidis lab.
+    # Reported 2026-09-09 as out of the Constantinidis lab; confirmed gone.
     "will banks",
     "russell jaffe",         # the sheet spells him both ways -- 013 has
     "rye jaffe",             # "Jaffe, Russell (Rye)", 413 has "Jaffe, Rye".
@@ -236,6 +253,9 @@ LAB_OVERRIDES = {
     # roster still say Tong. That is out of date -- confirmed 2026-09-09. Do not
     # "correct" this back from either source.
     "ikhwan jeon":   "OPlab",
+    # Confirmed 2026-09-09. The sheet put him in 221C, a Woodman room, which is
+    # what made him look like a Marois/Woodman conflict; he has left that room.
+    "zengbo xie":    "Marois",
 }
 
 SECOND_LAB = {
@@ -253,6 +273,10 @@ REMOVE_PLACEMENTS = {
     # Reported by Adrian Wong 2026-09-09 (as "Salad", the only occupant of 429).
     # He keeps 043A.
     "sajad ahmadi nebi": ["429"],
+    # Self-reported 2026-09-09. He keeps 405; 627A replaces 221C below.
+    "zengbo xie":  ["221C"],
+    # Moved to 627B, reported 2026-09-09. 517 keeps Jinhyeok Jeong.
+    "lanting qiu": ["517"],
 }
 
 # Extra room placements not in the spreadsheet: people who work out of a room the
@@ -261,6 +285,10 @@ EXTRA_ROOMS = {
     "savannah crutchfield": ["301"],   # Senior Administrative Officer, in the main office
     "sohee park":          ["525"],    # self-reported 2026-09-09: office is 525
     "antonia kaczkurkin":  ["210"],    # self-reported 2026-09-09: lab is 210, not 205
+    # Both moved into the Marois lab rooms on 6, reported 2026-09-09. This also
+    # settles Xie's Marois/Woodman lab conflict: 221C was the Woodman room.
+    "zengbo xie":          ["627A"],
+    "lanting qiu":         ["627B"],
 }
 
 # People who belong in the directory but have no room in the spreadsheet yet.
@@ -282,7 +310,10 @@ EXTRA_PEOPLE = [
      "role": "Grad student", "lab": "Gauthier"},
     {"first": "Adrian",    "last": "Wong",         "role": "Grad student", "lab": "Gauthier",
      "rooms": ["429"]},   # self-reported 2026-09-09, taking over from Sajad AhmadNabi
-    {"first": "Francesca", "last": "de Marneffe",  "role": "Grad student", "lab": "Park"},
+    # 402 assigned 2026-09-09. It is shared with David Ricci, who stays -- confirmed,
+    # so do not read the sheet's lone VACANT slot there as room for only one more.
+    {"first": "Francesca", "last": "de Marneffe",  "role": "Grad student", "lab": "Park",
+     "rooms": ["402"]},
     {"first": "Alenka",    "last": "Doyle",        "role": "Grad student", "lab": "Woodman"},
     {"first": "Daniel",    "last": "Garcia-Barnett", "role": "Grad student", "lab": "Marois"},
     {"first": "Isabella",  "last": "Jackson",      "role": "Grad student", "lab": "Watts"},
@@ -298,7 +329,7 @@ EXTRA_PEOPLE = [
     # so this entry carries her room. The sheet called Joanna Wang staff; she is a
     # grad student -- clarified 2026-09-09, so do not restore the staff role.
     {"first": "Ziqi",      "last": "Wang",         "role": "Grad student", "lab": "Park",
-     "rooms": ["213A"]},
+     "rooms": ["213A", "402"]},   # 402 assigned 2026-09-09, alongside the lab room
 
     # Self-reported 2026-09-09. He works across the Wallace and Ramachandran
     # labs; a person carries one lab here, so this records where his desk is.
@@ -888,6 +919,14 @@ def main():
     if dead:
         lines.append("   Usually a rename: the person is still listed under a new")
         lines.append("   spelling, so the correction silently stopped applying.")
+    lines.append("")
+    smell = [r for r in room_list if ANIMAL_SMELL.search(r["kind"] or "")]
+    lines.append(f"!! PUBLISHED ROOMS LABELLED LIKE ANIMAL-FACILITY SPACE ({len(smell)}):")
+    for r in smell:
+        lines.append(f"  {r['num']:8} {r['kind']}")
+    if smell:
+        lines.append("   These are on the public page. If the label names an animal")
+        lines.append("   facility function, add it to ANIMAL_ROOM_KINDS in build.py.")
     lines.append("")
     missing_rooms = sorted(r for r in EXCLUDE_ROOMS if r not in all_room_nums)
     if missing_rooms:

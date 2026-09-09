@@ -11,5 +11,7 @@
 # Internal data-quality report, not for the web.
 review.txt
 
+__pycache__/
+*.pyc
 .DS_Store
 .claude/

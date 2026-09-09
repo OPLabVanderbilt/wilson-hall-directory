@@ -374,6 +374,17 @@ LAB_DISPLAY = {
 def lab_name(pi):
     return LAB_DISPLAY.get(pi, f"{pi} Lab")
 
+# The space spreadsheet is read by staff who will not all know the lab acronyms,
+# so it names the faculty member instead. The public directory still uses the
+# name the lab goes by.
+LAB_PI = {
+    "BRAINS": "Kaczkurkin",
+    "OPlab":  "Gauthier",
+    "CATlab": "Palmeri",
+}
+def lab_pi(pi):
+    return LAB_PI.get(pi, pi)
+
 def canon_lab(name):
     """Fold the spreadsheet's PI-name typos into one spelling."""
     fixes = {

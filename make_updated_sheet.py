@@ -42,13 +42,15 @@ def assignee_line(person, lab_names):
     role = ROLE_OUT.get(person.get("r") or "")
     labs = [l for l in (person.get("l"), person.get("l2")) if l]
     # "Wallace, Mark (Wallace Faculty)" is noise; the sheet says "(Faculty)".
-    if len(labs) == 1 and build.norm(labs[0]) == build.norm(last):
+    if len(labs) == 1 and build.norm(build.lab_pi(labs[0])) == build.norm(last):
         labs = []
-    shown = "/".join(lab_names.get(l, l).replace(" Lab", "") for l in labs)
+    # Faculty surname, not the lab acronym: staff reading this sheet may not
+    # know that BRAINS is Kaczkurkin or CATlab is Palmeri.
+    shown = "/".join(build.lab_pi(l) for l in labs)
     if shown and role:
         tail = f"{shown} {role}"
     elif shown:
-        tail = lab_names.get(labs[0], labs[0]) if len(labs) == 1 else shown
+        tail = f"{shown} Lab"
     else:
         tail = role
     return f"{last}, {first}" + (f" ({tail})" if tail else "")
@@ -198,7 +200,8 @@ def main():
         ws.cell(row=r, column=1, value=p["n"]).font = body_font
         ws.cell(row=r, column=2, value=ROLE_OUT.get(p.get("r") or "", "")).font = body_font
         lab = p.get("l")
-        ws.cell(row=r, column=3, value=lab_names.get(lab, lab or "")).font = body_font
+        ws.cell(row=r, column=3,
+                value=(build.lab_pi(lab) + " Lab") if lab else "").font = body_font
         ws.cell(row=r, column=4, value="no room recorded").font = note_font
         r += 1
     stats["people awaiting a room"] = r - 2

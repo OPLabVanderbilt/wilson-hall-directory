@@ -156,7 +156,7 @@ TITLES = {
     "kari hoffman":            "Associate Professor",
     "steve hollon":            "Professor",
     "jon kaas":                "Professor",
-    "toni kaczkurkin":         "Assistant Professor",
+    "antonia kaczkurkin":      "Assistant Professor",
     "gordon logan":            "Professor",
     "alex maier":              "Associate Professor",
     "rene marois":             "Professor \u00b7 Director of Graduate Studies",
@@ -213,7 +213,7 @@ REMOVE_PLACEMENTS = {
 EXTRA_ROOMS = {
     "savannah crutchfield": ["301"],   # Senior Administrative Officer, in the main office
     "sohee park":          ["525"],    # self-reported 2026-09-09: office is 525
-    "toni kaczkurkin":     ["210"],    # self-reported 2026-09-09: lab is 210, not 205
+    "antonia kaczkurkin":  ["210"],    # self-reported 2026-09-09: lab is 210, not 205
 }
 
 # People who belong in the directory but have no room in the spreadsheet yet.
@@ -225,7 +225,7 @@ EXTRA_PEOPLE = [
     # Her only spreadsheet room was 205, withheld now that Kaczkurkin has said
     # the lab is 210. Without this entry she would disappear from the directory.
     {"first": "Leighton", "last": "Durham", "role": "Grad student",
-     "lab": "Kaczkurkin", "rooms": ["210"]},
+     "lab": "BRAINS", "rooms": ["210"]},
 
     # Graduate students on the department roster with no room in the space sheet,
     # added 2026-09-09 from
@@ -239,7 +239,7 @@ EXTRA_PEOPLE = [
     {"first": "Daniel",    "last": "Garcia-Barnett", "role": "Grad student", "lab": "Marois"},
     {"first": "Isabella",  "last": "Jackson",      "role": "Grad student", "lab": "Watts"},
     {"first": "Justin",    "last": "Jaraczewski",  "role": "Grad student", "lab": "Womelsdorf"},
-    {"first": "Ashna",     "last": "Ramiah",       "role": "Grad student", "lab": "Kaczkurkin"},
+    {"first": "Ashna",     "last": "Ramiah",       "role": "Grad student", "lab": "BRAINS"},
     {"first": "Yuerou",    "last": "Tang",         "role": "Grad student", "lab": "Tong"},
     {"first": "Andrew",    "last": "Tornatore",    "role": "Grad student", "lab": "Polyn"},
     {"first": "Ella",      "last": "Weeks",        "role": "Grad student", "lab": "Woodman"},
@@ -256,6 +256,7 @@ SPELLING_LAST = {
 }
 SPELLING_FIRST = {
     "jinkyeok": "Jinhyeok",   # department roster spelling
+    "toni": "Antonia",        # Antonia Kaczkurkin, self-reported 2026-09-09
 }
 
 # Short forms that will not merge on edit distance alone.
@@ -326,6 +327,7 @@ def canon_lab(name):
         "ramchandran": "Ramachandran",     "ramachandran": "Ramachandran",
         "shaefer": "Schaefer",             "schaefer": "Schaefer",
         "herculano": "Herculano-Houzel",
+        "kaczkurkin": "BRAINS",        # the lab goes by BRAINS Lab
     }
     return fixes.get(norm(name), name.strip())
 

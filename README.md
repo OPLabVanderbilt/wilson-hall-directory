@@ -26,14 +26,30 @@ Then read `review.txt` before publishing — it lists every person dropped for a
 last-day, every fuzzy name merge the script made, and every conflicting lab
 affiliation it could not resolve.
 
+Two lines in it start with `!!` and must both read `(0)`: corrections keyed on a name
+that matches nobody, and published rooms labelled like animal-facility space. A
+non-zero count on the first means a correction silently stopped applying; on the
+second, that a room reached the public page with a label naming an animal-facility
+function.
+
 ## What is deliberately withheld
 
 - **The entire Notes column.** It holds termination dates, start dates, and internal
   space-negotiation history. None of it is read.
 - **Animal-facility rooms.** Housing rooms, the surgery suite, food storage, the
-  laundry/PPE room, freezer rooms, the veterinary office, cage wash, and lab-service
-  rooms are excluded. Publishing exact NHP housing locations on a public URL is an
-  avoidable exposure. To change this, set `HIDE_ANIMAL_FACILITY = False` in `build.py`.
+  laundry/PPE room, freezer rooms, the veterinary office, cage wash, lab-service
+  rooms, and the WHAF corridor are excluded. Publishing exact NHP housing locations on
+  a public URL is an avoidable exposure. To change this, set
+  `HIDE_ANIMAL_FACILITY = False` in `build.py`.
+
+  `ANIMAL_ROOM_KINDS` matches the label **exactly**, so a renamed or newly added label
+  would publish silently. `ANIMAL_SMELL` is the safety net: any room that reaches the
+  public page still carrying an animal-facility-sounding label is reported in
+  `review.txt`. It warns only — add the label to `ANIMAL_ROOM_KINDS` to withhold it.
+
+  Note the rule hides **function, not footprint**. Basement rooms are listed
+  near-continuously, so the withheld numbers are inferable from the gaps. This was
+  raised and accepted on 2026-09-09.
 - **Storage rooms.** Any room whose spreadsheet label is `(Storage)` — 107, 108, 109,
   518, and 314. Controlled by `HIDE_ROOM_KINDS` in `build.py`, matched on the label
   before friendly relabelling, so a new storage room is caught automatically. Note 314
@@ -43,6 +59,9 @@ affiliation it could not resolve.
   `vacant`) or has no label at all. Empty *lab* rooms are kept, because "whose lab
   is 023?" is still a real question; the page groups those instead. Facilities —
   conference rooms, lounges, the kitchen — are kept and simply show no occupant.
+  Dropping every empty room was tried on 2026-09-09 and reversed the same day; the
+  generated spreadsheet carries the vacated rooms either way, so they can be restored
+  to the page as soon as someone moves in.
 - **Anyone whose recorded last day has passed.**
 - **Anyone on the `EXCLUDE_PEOPLE` list in `build.py`** — people the spreadsheet still
   lists but who have retired or left with no last-day date to catch them. Add a
@@ -77,8 +96,10 @@ All labs. Two structures control it, both in `index.html`: the `GROUPS` array in
 covers. A button may cover several roles — **Faculty** covers `Faculty` and `Lecturer`,
 while each person still displays their own precise role.
 
-18 undergraduate/RA entries (role `Student`) and 10 with no role recorded in the
-spreadsheet are reachable only through **All**.
+Undergraduate/RA entries (role `Student`) and people with no role recorded in the
+spreadsheet are reachable only through **All** — 6 and 7 respectively as of
+2026-09-09. Both counts move with every departure, so read them from `data.js` rather
+than trusting this line.
 
 ## Faculty titles
 
@@ -102,9 +123,11 @@ spreadsheet yet; they render with a **TBD** chip instead of a room number. Delet
 entry once the spreadsheet carries them — the build skips it if the name already
 appears, so a duplicate cannot slip through. `review.txt` lists everyone showing TBD.
 
-`EXTRA_ROOMS` adds a room placement the spreadsheet does not record — currently the
-Senior Administrative Officer, who works out of the main office (301) as well as her
-own 301D.
+`EXTRA_ROOMS` adds a room placement the spreadsheet does not record — the Senior
+Administrative Officer, who works out of the main office (301) as well as her own
+301D, plus self-reported moves the sheet has not caught up with. Its counterpart
+`REMOVE_PLACEMENTS` drops a room a person no longer occupies; a move needs both, one
+entry in each.
 
 Neither map is regenerated automatically — the department page has to be re-checked
 by hand when titles change. `review.txt` reports any `TITLES` key that no longer

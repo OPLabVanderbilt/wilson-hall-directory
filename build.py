@@ -193,6 +193,12 @@ STAFF_TITLES = {
 # Corrections reported through the REDCap form, applied on top of the spreadsheet.
 # Each entry records who asked and when, so a later spreadsheet update can be
 # checked against them.
+# Advisors the department roster records but the space sheet does not.
+LAB_OVERRIDES = {
+    "yinuo peng":    "Palmeri",   # department roster, 2026-09-09
+    "ginni strehle": "Tong",
+}
+
 ROLE_OVERRIDES = {
     "conor smithson": "Post-doc",      # self-reported 2026-09-09
 }
@@ -220,6 +226,24 @@ EXTRA_PEOPLE = [
     # the lab is 210. Without this entry she would disappear from the directory.
     {"first": "Leighton", "last": "Durham", "role": "Grad student",
      "lab": "Kaczkurkin", "rooms": ["210"]},
+
+    # Graduate students on the department roster with no room in the space sheet,
+    # added 2026-09-09 from
+    # https://www.vanderbilt.edu/psychological_sciences/people/?group=graduate_student
+    # Only students advised by Wilson Hall faculty; that roster also covers Peabody.
+    {"first": "Elton",     "last": "Cross",        "nick": "Ellie",
+     "role": "Grad student", "lab": "Gauthier"},
+    {"first": "Adrian",    "last": "Wong",         "role": "Grad student", "lab": "Gauthier"},
+    {"first": "Francesca", "last": "de Marneffe",  "role": "Grad student", "lab": "Park"},
+    {"first": "Alenka",    "last": "Doyle",        "role": "Grad student", "lab": "Woodman"},
+    {"first": "Daniel",    "last": "Garcia-Barnett", "role": "Grad student", "lab": "Marois"},
+    {"first": "Isabella",  "last": "Jackson",      "role": "Grad student", "lab": "Watts"},
+    {"first": "Justin",    "last": "Jaraczewski",  "role": "Grad student", "lab": "Womelsdorf"},
+    {"first": "Ashna",     "last": "Ramiah",       "role": "Grad student", "lab": "Kaczkurkin"},
+    {"first": "Yuerou",    "last": "Tang",         "role": "Grad student", "lab": "Tong"},
+    {"first": "Andrew",    "last": "Tornatore",    "role": "Grad student", "lab": "Polyn"},
+    {"first": "Ella",      "last": "Weeks",        "role": "Grad student", "lab": "Woodman"},
+    {"first": "Minghua",   "last": "Zhang",        "role": "Grad student", "lab": "Polyn"},
 ]
 
 # Confirmed spellings. The spreadsheet holds both variants for these people;
@@ -230,7 +254,9 @@ SPELLING_LAST = {
     "mueller": "Mueller",
     "herculano": "Herculano-Houzel",   # spreadsheet truncates the surname
 }
-SPELLING_FIRST = {}
+SPELLING_FIRST = {
+    "jinkyeok": "Jinhyeok",   # department roster spelling
+}
 
 # Short forms that will not merge on edit distance alone.
 NICKNAMES = {
@@ -590,7 +616,10 @@ def main():
             # A lab attribution can be lost when the room it came from is
             # withheld, so fall back to the labs of the rooms actually occupied.
             labs = sorted({rooms[r]["lab"] for r in rms if rooms.get(r, {}).get("lab")})
-        if len(labs) > 1:
+        override = LAB_OVERRIDES.get(norm(f"{first} {last}"))
+        if override:
+            labs = [override]
+        elif len(labs) > 1:
             conflicts.append((f"{first} {last}", "labs", labs))
         people.append({
             "n": f"{first} {last}",
@@ -608,7 +637,7 @@ def main():
         if norm(name) in {norm(p["n"]) for p in people}:
             continue          # the spreadsheet caught up; the entry is redundant
         people.append({
-            "n": name, "s": e["last"], "f": e["first"], "k": None,
+            "n": name, "s": e["last"], "f": e["first"], "k": e.get("nick"),
             "t": e.get("title"), "r": e.get("role"), "l": e.get("lab"),
             "m": [r for r in e.get("rooms", []) if r in rooms],
             "tbd": not e.get("rooms"),

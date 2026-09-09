@@ -69,6 +69,9 @@ because staff reading it may not know the acronyms. `LAB_PI` maps between them.
   roster lists them as a graduate student. Unresolved.
 - **15 students on the roster have no advisor listed**, so it is unclear whether they
   are in this building. Not added.
+- **Three staff in the shared 043 rooms** took their lab from the room label, which
+  names Hoffman before Womelsdorf. `review.txt` lists them under "LAB GUESSED FROM
+  A SHARED ROOM". Unverified.
 - **Room 301A** is labelled "Break Room" but was the Grants Specialist's office, now
   vacant and being refilled.
 - **Rooms 205, 511/513/514, 611\*, 317/318** are withheld pending reassignment. When

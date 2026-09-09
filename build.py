@@ -520,12 +520,18 @@ def parse_person(raw_assignee, room_lab):
     if not first or not last:
         return None
 
+    from_room = False
     if lab is None and room_lab:
         lm = re.match(r"^([A-Z][A-Za-z\-]+)(?:/([A-Z][A-Za-z\-]+))?\s+Lab", room_lab)
         if lm:
             lab = canon_lab(lm.group(1))
+            from_room = True
+            if lm.group(2):
+                # The room is shared; naming the first lab is an arbitrary choice.
+                from_room = "shared"
 
-    return {"first": first, "last": last, "nick": nick, "role": role, "lab": lab}
+    return {"first": first, "last": last, "nick": nick, "role": role,
+            "lab": lab, "from_room": from_room}
 
 # --- Duplicate merging -------------------------------------------------------
 
@@ -681,7 +687,17 @@ def main():
     pi_surnames = {norm(l) for r in rooms.values() for l in
                    re.split(r"\s*/\s*", r["lab"] or "") if l}
 
-    people, conflicts, roomless = [], [], []
+    # Surname -> lab key, so a PI can be put in their own lab. Rooms shared by two
+    # labs are labelled "(A/B Lab)", and anyone in them whose own cell names no lab
+    # would otherwise inherit whichever name comes first -- which put Womelsdorf in
+    # the Hoffman lab. Faculty only: a student sharing a PI's surname is not the PI.
+    pi_by_surname = {}
+    for r in rooms.values():
+        for k in re.split(r"\s*/\s*", r["lab"] or ""):
+            if k:
+                pi_by_surname[norm(lab_pi(k))] = k
+
+    people, conflicts, roomless, joint_guess = [], [], [], []
     for members in groups.values():
         for pp, _ in members:
             if pp["role"] is None and norm(pp["last"]) in pi_surnames:
@@ -707,6 +723,17 @@ def main():
             # A lab attribution can be lost when the room it came from is
             # withheld, so fall back to the labs of the rooms actually occupied.
             labs = sorted({rooms[r]["lab"] for r in rms if rooms.get(r, {}).get("lab")})
+        # Flag a lab attribution that came only from a room shared by two labs:
+        # the sheet names one of them first, and that choice is arbitrary.
+        if role != "Faculty" and all(pp.get("from_room") == "shared"
+                                     for pp, _ in members if pp["lab"]):
+            if any(pp["lab"] for pp, _ in members):
+                joint_guess.append((f"{first} {last}", role or "no role",
+                                    ", ".join(rms)))
+
+        if role == "Faculty" and norm(last) in pi_by_surname:
+            labs = [pi_by_surname[norm(last)]]
+
         override = LAB_OVERRIDES.get(norm(f"{first} {last}"))
         if override:
             labs = [canon_lab(override)]
@@ -858,6 +885,13 @@ def main():
     if fuzzy:
         lines.append("  ^ the published spelling for each of these was chosen arbitrarily.")
         lines.append("    Add the correct one to SPELLING_LAST / SPELLING_FIRST in build.py.")
+    lines.append("")
+    lines.append(f"LAB GUESSED FROM A SHARED ROOM -- verify ({len(joint_guess)}):")
+    for n, r, rms in sorted(joint_guess):
+        lines.append(f"  {n} ({r}) in {rms}")
+    if joint_guess:
+        lines.append("  Their own cell names no lab, so they took whichever lab the")
+        lines.append("  room label happens to list first.")
     lines.append("")
     lines.append(f"CONFLICTING LAB AFFILIATION ({len(conflicts)}):")
     for name, _, labs_ in conflicts:

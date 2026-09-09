@@ -122,6 +122,18 @@ EXCLUDE_PEOPLE = {
     "madeline stapp",
     "maya levinson",
     "seohyun choi",
+
+    "chrissy suell",         # no longer at Vanderbilt, reported 2026-09-09
+
+    # Reported 2026-09-09: no longer in the Constantinidis lab.
+    "will banks",
+    "russell jaffe",         # the sheet spells him both ways -- 013 has
+    "rye jaffe",             # "Jaffe, Russell (Rye)", 413 has "Jaffe, Rye".
+    # Reported 2026-09-09: moved on from the Park lab.
+    "olivia jelsma",
+    "hyeonseung lee",
+    # Same person as Ziqi Wang below, who keeps 213A.
+    "joanna wang",
 }
 
 # Standing information that is not a room. These appear in Common spaces and are
@@ -280,14 +292,23 @@ EXTRA_PEOPLE = [
     {"first": "Andrew",    "last": "Tornatore",    "role": "Grad student", "lab": "Polyn"},
     {"first": "Ella",      "last": "Weeks",        "role": "Grad student", "lab": "Woodman"},
     {"first": "Minghua",   "last": "Zhang",        "role": "Grad student", "lab": "Polyn"},
-    # Confirmed a distinct person from Joanna Wang (staff, 213A) by the incoming-
-    # student list in the 2026-08-06 orientation email.
-    {"first": "Ziqi",      "last": "Wang",         "role": "Grad student", "lab": "Park"},
+    # The sheet's "Wang, Joanna (Staff)" in 213A is this same person; she goes by
+    # Ziqi. Reported 2026-09-09, superseding the earlier reading of the 2026-08-06
+    # orientation list as naming a second Wang. "joanna wang" is excluded above,
+    # so this entry carries her room. The sheet called Joanna Wang staff; she is a
+    # grad student -- clarified 2026-09-09, so do not restore the staff role.
+    {"first": "Ziqi",      "last": "Wang",         "role": "Grad student", "lab": "Park",
+     "rooms": ["213A"]},
 
     # Self-reported 2026-09-09. He works across the Wallace and Ramachandran
     # labs; a person carries one lab here, so this records where his desk is.
     {"first": "Adam", "last": "Tiesman", "role": "Grad student",
      "lab": "Wallace", "rooms": ["614A"]},
+
+    # Reported 2026-09-09, in 013 following Chrissy Suell's departure. Role is
+    # provisional -- recorded as Staff pending confirmation from the Vice Chair.
+    {"first": "Kris", "last": "Clifft", "role": "Staff",
+     "lab": "Constantinidis", "rooms": ["013"]},
 ]
 
 # Confirmed spellings. The spreadsheet holds both variants for these people;

@@ -35,6 +35,10 @@ affiliation it could not resolve.
   518, and 314. Controlled by `HIDE_ROOM_KINDS` in `build.py`, matched on the label
   before friendly relabelling, so a new storage room is caught automatically. Note 314
   is the department supply room; its room label says Storage, so the rule catches it.
+- **Empty offices.** A room with nobody in it whose label matches `HIDE_WHEN_EMPTY`
+  in `build.py` (`office` or `vacant`) is dropped after occupancy is worked out —
+  an empty office tells a visitor nothing. Empty *lab* rooms are kept, because
+  "whose lab is 023?" is still a real question; the page groups those instead.
 - **Anyone whose recorded last day has passed.**
 - **Anyone on the `EXCLUDE_PEOPLE` list in `build.py`** — people the spreadsheet still
   lists but who have retired or left with no last-day date to catch them. Add a
@@ -101,6 +105,17 @@ own 301D.
 Neither map is regenerated automatically — the department page has to be re-checked
 by hand when titles change. `review.txt` reports any `TITLES` key that no longer
 matches a person, and any faculty member with no title.
+
+## Grouped lab rooms
+
+Empty rooms belonging to one lab on one floor collapse into a single row — the
+basement's ten empty Constantinidis rooms become one "Constantinidis Lab · 10 rooms"
+entry linking to the lab. This happens in `groupRooms()` in `index.html`, at display
+time only: every room stays individually addressable at `#/r/<num>`, and a room whose
+number the reader actually typed is never folded away.
+
+Room labels for lab rooms are rewritten to the canonical lab name during the build,
+so the sheet's "Herculano Lab" and "Constantindis Lab" both display correctly.
 
 ## Corrections
 

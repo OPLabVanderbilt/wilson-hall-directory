@@ -331,6 +331,43 @@ function rowInfo(c, toks){
     '<span class="nm">'+hl(c.title, toks)+'</span>'+
     '<span class="sub">'+hl(c.sub, toks)+'</span></span>'+CHEV+'</button>';
 }
+// Empty rooms belonging to one lab on one floor collapse into a single row:
+// ten "Constantinidis Lab" rows in the basement say no more than one does.
+// A room the reader explicitly searched for is never folded away.
+function groupRooms(list, keepNums){
+  var out = [], seen = {};
+  list.forEach(function(r){
+    var groupable = !r.people.length && r.lab &&
+                    (keepNums || []).indexOf(nm(r.num)) < 0;
+    if(!groupable){ out.push(r); return; }
+    var key = r.lab + '|' + r.floor;
+    if(seen[key]){ seen[key].rooms.push(r); return; }
+    seen[key] = {group:true, lab:r.lab, floor:r.floor, rooms:[r]};
+    out.push(seen[key]);
+  });
+  return out.map(function(x){
+    return (x.group && x.rooms.length === 1) ? x.rooms[0] : x;   // a group of one is a room
+  });
+}
+
+function rowGroup(g, toks, hideFloor){
+  var nums = g.rooms.map(function(r){ return r.num; });
+  var li = -1;
+  for(var i=0;i<D.labs.length;i++) if(D.labs[i].pi === g.lab){ li = i; break; }
+  var href = li > -1 ? '#/l/'+li : '#/f/'+encodeURIComponent(g.floor);
+  var sub = nums.length + ' rooms · ' + nums.join(', ');
+  if(!hideFloor) sub = esc(g.floor) + ' · ' + esc(sub); else sub = esc(sub);
+  return '<button class="row" data-go="'+href+'"><span class="txt">'+
+    '<span class="nm">'+hl(g.lab + ' Lab', toks)+'</span>'+
+    '<span class="sub">'+sub+'</span></span>'+CHEV+'</button>';
+}
+
+function renderRooms(list, toks, hideFloor, keepNums){
+  return groupRooms(list, keepNums).map(function(x){
+    return x.group ? rowGroup(x, toks, hideFloor) : rowRoom(x, toks, hideFloor);
+  }).join('');
+}
+
 function section(title, html){
   if(!html) return '';
   return (title ? '<h2>'+title+'</h2>' : '') + '<div class="list">'+html+'</div>';
@@ -408,7 +445,7 @@ function viewResults(res){
     section('', res.info.map(function(c){ return rowInfo(c, t); }).join('')) +
     section('People',  res.people.slice(0,40).map(function(p){ return rowPerson(p, D.people.indexOf(p), t); }).join('')) +
     section('Labs',    res.labs.slice(0,10).map(function(l){ return rowLab(l, D.labs.indexOf(l), t); }).join('')) +
-    section('Rooms',   res.rooms.slice(0,25).map(function(r){ return rowRoom(r, t); }).join(''));
+    section('Rooms',   renderRooms(res.rooms.slice(0,40), t, false, t));
   M.innerHTML = html
     ? html + fixBtn(true)
     : '<div class="empty"><b>No match</b>Try a last name, a lab name, or a room number like 220.</div>'
@@ -477,7 +514,7 @@ function viewFloor(f){
   var rs = D.rooms.filter(function(r){ return r.floor === f; });
   M.innerHTML = '<div class="hero"><div class="nm">'+esc(f)+'</div>'+
     '<div class="meta">'+rs.length+' rooms listed</div></div>' +
-    section('Rooms', rs.map(function(r){ return rowRoom(r, [], true); }).join('')) + fixBtn(true);
+    section('Rooms', renderRooms(rs, [], true)) + fixBtn(true);
 }
 
 // A filter button may cover more than one recorded role. Lecturers are teaching

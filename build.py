@@ -36,6 +36,12 @@ HIDE_ROOM_KINDS = {
     "storage",
 }
 
+# An office with nobody in it tells a visitor nothing, so empty rooms of these
+# kinds are dropped after occupancy is worked out. Lab rooms are NOT included:
+# an empty lab room still answers "whose lab is 023?", and those are grouped by
+# floor in the page instead.
+HIDE_WHEN_EMPTY = re.compile(r"office|^vacant$", re.I)
+
 ANIMAL_ROOM_KINDS = {
     "housing room", "surgery suite", "autoclaves", "food storage",
     "laundry room", "freezer", "veterinary office", "dac breakroom",
@@ -574,8 +580,17 @@ def main():
         r["people"] = sorted(occ.get(r["num"], []))
         if r.get("lab2"):
             r["lab"] = (r["lab"] or "") + " / " + r["lab2"]
+        # Show the canonical lab name, not whatever the sheet typed: the file has
+        # "Herculano Lab" and "Constantindis Lab" for labs named elsewhere in full.
+        if r["lab"] and r["num"] not in FACILITY_LABELS:
+            r["kind"] = r["lab"] + " Lab"
         r.pop("lab2", None)
         del r["sort"]
+
+    dropped_empty = [r["num"] for r in room_list
+                     if not r["people"] and HIDE_WHEN_EMPTY.search(r["kind"] or "")]
+    room_list = [r for r in room_list
+                 if r["people"] or not HIDE_WHEN_EMPTY.search(r["kind"] or "")]
 
     # --- labs -----------------------------------------------------------------
     labs = defaultdict(lambda: {"rooms": [], "people": []})
@@ -663,6 +678,9 @@ def main():
     lines.append("")
     lines.append(f"animal-facility rooms withheld: {HIDE_ANIMAL_FACILITY}")
     lines.append(f"room types withheld: {', '.join(sorted(HIDE_ROOM_KINDS))}")
+    lines.append("")
+    lines.append(f"EMPTY OFFICES dropped ({len(dropped_empty)}):")
+    lines.append("           " + ", ".join(dropped_empty))
     (HERE / "review.txt").write_text("\n".join(lines), encoding="utf-8")
 
     print("\n".join(lines[:6]))

@@ -70,6 +70,19 @@ to `ANIMAL_ROOM_KINDS`.
 
 ## Workflow
 
+**Ask the Vice Chair what today's date is before starting a revision, and set `TODAY`
+in `build.py` to it.** Standing request, made 2026-09-10. Nothing in the build can
+detect a stale date — it is pinned deliberately, so that a rebuild of an old checkout
+reproduces that day's output — and a wrong one silently mis-stamps `data.js`,
+`review.txt`, and the filename of the spreadsheet the department works from. It also
+decides who is dropped for a past last day. Ask; do not assume the session's own clock
+is what the department is working to.
+
+`make_updated_sheet.py` takes its date and output filename from `build.TODAY`, so
+there is only the one place to change. Each run writes a new dated file; **move the
+previous one into `Old sheets/`** so the folder holds exactly one current sheet and
+nobody has to guess which is live. The whole folder is gitignored, like every `.xlsx`.
+
 ```bash
 python3 build.py          # spreadsheet + corrections -> data.js, review.txt
 python3 make_updated_sheet.py   # optional: refresh the .xlsx for the department
@@ -123,9 +136,6 @@ faculty name — they cost about 190px of a 375px row.
 
 - **10 people have no room** and show TBD — the incoming graduate students. Whoever
   allocates offices could clear all ten at once.
-- **4 correction-form entries could not be applied**: two report a departed post-doc
-  and two a graduated student, but the form did not capture *which person*. The form
-  has since been fixed; those four need resubmitting.
 - **A staff member listed from a 2021 entry** appears as Staff, but the department
   roster lists them as a graduate student. Unresolved.
 - **15 students on the roster have no advisor listed**, so it is unclear whether they

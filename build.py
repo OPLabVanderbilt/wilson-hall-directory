@@ -20,7 +20,14 @@ import openpyxl
 
 HERE = Path(__file__).parent
 XLSX = HERE / "2025_2026 Wilson Hall Space Assignments.xlsx"
-TODAY = datetime.date(2026, 9, 9)
+# The build date. It decides who is dropped for a past last day, stamps data.js and
+# review.txt, and names the generated spreadsheet. It is pinned rather than
+# date.today() so a rebuild of an old checkout reproduces that day's output.
+#
+# CONFIRM THIS WITH THE VICE CHAIR AT THE START OF EVERY REVISION -- it is the one
+# thing here that goes stale by simply being left alone, and a wrong date silently
+# mis-stamps the spreadsheet the department works from.
+TODAY = datetime.date(2026, 9, 10)
 
 # --- Policy switches ---------------------------------------------------------
 
@@ -141,6 +148,10 @@ EXCLUDE_PEOPLE = {
     "seohyun choi",
 
     "chrissy suell",         # no longer at Vanderbilt, reported 2026-09-09
+
+    # Reported 2026-09-10.
+    "adon rosen",            # post-doc, was in 218 and 427
+    "joseph sexton",         # grad student, was the only occupant of 211C
 
     # Reported 2026-09-09 as out of the Constantinidis lab; confirmed gone.
     "will banks",

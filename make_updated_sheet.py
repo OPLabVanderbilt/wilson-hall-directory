@@ -24,8 +24,10 @@ import build   # reuse the parsing rules, so "person" means the same thing here
 
 HERE = Path(__file__).parent
 SRC = HERE / "2025_2026 Wilson Hall Space Assignments.xlsx"
-OUT = HERE / "Wilson Hall Space Assignments - updated 2026-09-09.xlsx"
-TODAY = "2026-09-09"
+# Both derived from build.TODAY: the date used to live in three places and drifted
+# apart, so the sheet could be stamped a different day from the data it came from.
+TODAY = build.TODAY.isoformat()
+OUT = HERE / f"Wilson Hall Space Assignments - updated {TODAY}.xlsx"
 
 ROLE_OUT = {
     "Faculty": "Faculty", "Lecturer": "Lecturer", "Post-doc": "Post-Doc",

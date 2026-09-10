@@ -15,8 +15,14 @@ See `CLAUDE.md` for current state and open items.
 | `build.py` | Regenerates `data.js` from the spreadsheet. |
 | `review.txt` | Generated. Data-quality report **for the department, not for the web**. |
 | `2025_2026 Wilson Hall Space Assignments.xlsx` | Source of truth. |
+| `Wilson Hall Space Assignments - updated <date>.xlsx` | Generated for the department. |
+| `Old sheets/` | Superseded generated sheets. Gitignored. |
 
 ## Updating after the spreadsheet changes
+
+Set `TODAY` in `build.py` to the current date first — it is pinned, not `date.today()`,
+so that rebuilding an old checkout reproduces that day's output. `make_updated_sheet.py`
+reads the same value for its own stamp and output filename.
 
 ```bash
 python3 build.py

@@ -1057,8 +1057,12 @@ def main():
     for name, _, labs_ in conflicts:
         lines.append(f"  {name}: {', '.join(labs_)}")
     lines.append("")
-    used = {norm(p["n"]) for p in people}
-    unmatched = sorted(k for k in list(TITLES) + list(STAFF_TITLES) if k not in used)
+    # Same "known" set the correction guard above uses, and for the same reason: a
+    # title held by someone on EXCLUDE_PEOPLE is that entry working, not a stale key.
+    # Checking against published people alone flagged David Schlundt from the day he
+    # retired, and would flag every future retiree who had a title -- leaving a line
+    # that can never read 0 and so gets skipped.
+    unmatched = sorted(k for k in list(TITLES) + list(STAFF_TITLES) if k not in known)
     lines.append(f"TITLES/STAFF_TITLES in build.py matching nobody ({len(unmatched)}):")
     for k in unmatched:
         lines.append(f"  {k}")

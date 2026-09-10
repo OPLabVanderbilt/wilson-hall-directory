@@ -152,6 +152,10 @@ EXCLUDE_PEOPLE = {
     # Reported 2026-09-10.
     "adon rosen",            # post-doc, was in 218 and 427
     "joseph sexton",         # grad student, was the only occupant of 211C
+    # Post-doc, was in 411A and 617D. Both rooms keep other occupants. He was also
+    # one of the CONFLICTING LAB AFFILIATION entries (CATlab vs Logan), so that
+    # conflict goes with him rather than needing to be resolved.
+    "kaleb lowe",
 
     # Reported 2026-09-09 as out of the Constantinidis lab; confirmed gone.
     "will banks",
@@ -210,6 +214,10 @@ EXCLUDE_ROOMS = {
 # Keys are lowercase "first last" as the name appears in the spreadsheet.
 TITLES = {
     "ryan balch":              "Senior Lecturer",
+    # Not on the department faculty page; given by the Vice Chair 2026-09-10.
+    # "of Psychology" dropped, as for every other title here -- it is the home
+    # department, and the page only spells it out for appointments elsewhere.
+    "jamie reed":              "Research Assistant Professor",
     "andre bastos":            "Assistant Professor",
     "devin burns":             "Senior Lecturer",
     "isabel gauthier":         "Professor \u00b7 Vice Chair",
@@ -273,6 +281,14 @@ LAB_OVERRIDES = {
     # that bug hid the sheet's Palmeri and let 213D make her look like Park by
     # accident. The right answer was Park; the reason was wrong.
     "sophia kekes-szabo": "Park",
+    # She sits in both 014A (Kaas) and 035 (Chen), so the build had no way to choose
+    # and reported it as a conflict. Kaas is right -- confirmed 2026-09-10.
+    "jamie reed":    "Kaas",
+    # Her cells disagree -- 312 says "Watts Grad Student", 612B says "Schaefer Lab".
+    # Schaefer is right, confirmed 2026-09-10. It was already displaying as Schaefer,
+    # but only because the tie was broken alphabetically; pinned so it stays right if
+    # either cell is ever re-typed.
+    "kaiya brand":   "Schaefer",
 }
 
 SECOND_LAB = {

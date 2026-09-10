@@ -267,6 +267,12 @@ LAB_OVERRIDES = {
     # Confirmed 2026-09-09. The sheet put him in 221C, a Woodman room, which is
     # what made him look like a Marois/Woodman conflict; he has left that room.
     "zengbo xie":    "Marois",
+    # Her cell reads "Kekes-Szabo, Sophia (Palmeri post-doc)". That is wrong -- she is
+    # a post-doc in Sohee Park's lab, confirmed 2026-09-10. Do not "restore" Palmeri
+    # from the spreadsheet. Note this is not the old case-sensitivity bug reappearing:
+    # that bug hid the sheet's Palmeri and let 213D make her look like Park by
+    # accident. The right answer was Park; the reason was wrong.
+    "sophia kekes-szabo": "Park",
 }
 
 SECOND_LAB = {
@@ -351,6 +357,11 @@ EXTRA_PEOPLE = [
     # provisional -- recorded as Staff pending confirmation from the Vice Chair.
     {"first": "Kris", "last": "Clifft", "role": "Staff",
      "lab": "Constantinidis", "rooms": ["013"]},
+
+    # Reported 2026-09-10. The sheet has nobody in 422 -- its only entry is the
+    # lab's main entry door -- so he appears here rather than as a correction.
+    {"first": "David", "last": "Coggan", "role": "Post-doc",
+     "lab": "Tong", "rooms": ["422"]},
 ]
 
 # Confirmed spellings. The spreadsheet holds both variants for these people;
@@ -560,11 +571,18 @@ def parse_person(raw_assignee, room_lab):
                 matched = True
                 break
         # "Gauthier Grad Student", "Womelsdorf Lab", "Kaczkurkin Lab"
-        lm = re.match(r"^\s*([A-Z][A-Za-z\-]+)\s+(?:Lab\b|Grad|Post|Neuro|Personnel)", g)
+        #
+        # The keyword is matched case-insensitively but the surname is NOT: the sheet
+        # also writes "Tong post-doc" and "Bastos grad student" in lower case, and a
+        # case-sensitive keyword dropped the lab silently. Worse than losing it --
+        # the person then fell back to the lab of whatever room they sat in, so
+        # Kekes-Szabo read as Park when her cell says Palmeri. Keep [A-Z] on the
+        # surname so a lower-case word is never taken for a lab name.
+        lm = re.match(r"^\s*([A-Z][A-Za-z\-]+)\s+(?i:Lab\b|Grad|Post|Neuro|Personnel)", g)
         if lm and lab is None:
             lab = canon_lab(lm.group(1))
             matched = True
-        elif re.fullmatch(r"[A-Z][A-Za-z\-]+\s+Lab", g.strip()) and lab is None:
+        elif re.fullmatch(r"(?i:[A-Z][A-Za-z\-]+\s+Lab)", g.strip()) and lab is None:
             lab = canon_lab(g.split()[0]); matched = True
         if not matched and re.fullmatch(r"[A-Z][a-zA-Z]{1,12}", g.strip()):
             nick = g.strip()
@@ -772,6 +790,7 @@ def main():
                 pi_by_surname[norm(lab_pi(k))] = k
 
     people, conflicts, roomless, joint_guess = [], [], [], []
+    room_guess = []
     for members in groups.values():
         for pp, _ in members:
             if pp["role"] is None and norm(pp["last"]) in pi_surnames:
@@ -805,14 +824,27 @@ def main():
                 joint_guess.append((f"{first} {last}", role or "no role",
                                     ", ".join(rms)))
 
+        # Same idea, one step weaker: their own cell named no lab at all, so it was
+        # taken from the room label. Usually right, but it is a guess -- a post-doc
+        # sitting in another lab's room silently takes that lab, and unlike a missing
+        # lab it looks like an answer. Recorded so the guesses are at least listed.
+        from_room_only = (role != "Faculty"
+                          and any(pp["lab"] for pp, _ in members)
+                          and all(pp.get("from_room") for pp, _ in members if pp["lab"])
+                          and not all(pp.get("from_room") == "shared"
+                                      for pp, _ in members if pp["lab"]))
+
         if role == "Faculty" and norm(last) in pi_by_surname:
             labs = [pi_by_surname[norm(last)]]
 
         override = LAB_OVERRIDES.get(norm(f"{first} {last}"))
         if override:
-            labs = [canon_lab(override)]
+            labs = [canon_lab(override)]      # pinned by hand, so no longer a guess
         elif len(labs) > 1:
             conflicts.append((f"{first} {last}", "labs", labs))
+        elif from_room_only and labs:
+            room_guess.append((f"{first} {last}", role or "no role",
+                               labs[0], ", ".join(rms)))
         people.append({
             "n": f"{first} {last}",
             "t": TITLES.get(norm(f"{first} {last}"))
@@ -988,6 +1020,15 @@ def main():
     if fuzzy:
         lines.append("  ^ the published spelling for each of these was chosen arbitrarily.")
         lines.append("    Add the correct one to SPELLING_LAST / SPELLING_FIRST in build.py.")
+    lines.append("")
+    lines.append(f"LAB TAKEN FROM THE ROOM, NOT THEIR OWN CELL -- unverified "
+                 f"({len(room_guess)}):")
+    for n, r, lab, rms in sorted(room_guess):
+        lines.append(f"  {n} ({r}) -> {lab}, from {rms}")
+    if room_guess:
+        lines.append("   Their cell names no lab, so they took the room's. Anyone")
+        lines.append("   working out of another lab's room is wrong here. Pin the")
+        lines.append("   right answer in LAB_OVERRIDES and they drop off this list.")
     lines.append("")
     lines.append(f"LAB GUESSED FROM A SHARED ROOM -- verify ({len(joint_guess)}):")
     for n, r, rms in sorted(joint_guess):

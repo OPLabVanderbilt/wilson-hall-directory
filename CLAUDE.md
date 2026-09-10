@@ -109,6 +109,30 @@ Office documents are gitignored, but new working files may not be.
 | `TITLES`, `STAFF_TITLES` | from the department pages |
 | `LAB_DISPLAY` / `LAB_PI` | lab naming — see below |
 
+## A missing lab is worse than it looks
+
+When a person's cell names no lab, they inherit the lab of the room they sit in. That
+turns a gap into a **wrong answer** rather than a blank. `review.txt` now lists them:
+
+    LAB TAKEN FROM THE ROOM, NOT THEIR OWN CELL -- unverified (21):
+
+Currently 21 people, mostly staff and undergraduates whose cells carry only a name.
+Each is a plausible guess, not a fact — anyone working out of another lab's room is
+wrong there. Pinning someone in `LAB_OVERRIDES` drops them off the list, so it doubles
+as a record of what has actually been checked. Unlike the two `!!` guards, a non-zero
+count here is normal and not a failure.
+
+This bit on 2026-09-10. The lab keyword was matched case-sensitively, so the sheet's
+"Tong post-doc" and "Bastos grad student" dropped the lab that was right there in the
+cell. Parde and Ricci ended up with no lab; Kekes-Szabo ended up in Park because 213D
+is a Park room. The keyword is now case-insensitive, the surname deliberately still
+is not, so a lower-case word cannot be read as a lab name.
+
+Kekes-Szabo is also the reminder that **the sheet's own annotation can be wrong**: her
+cell says "Palmeri post-doc" and she is in fact a post-doc in Sohee Park's lab, so she
+is pinned in `LAB_OVERRIDES`. Fixing the parser made the sheet's error visible for the
+first time -- before that, an accident had been hiding it behind the right answer.
+
 ## Two audiences, two names
 
 The **directory** shows the name a lab goes by (OPlab, CATlab, BRAINS Lab). The

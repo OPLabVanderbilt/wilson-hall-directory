@@ -32,6 +32,10 @@ Then read `review.txt` before publishing — it lists every person dropped for a
 last-day, every fuzzy name merge the script made, and every conflicting lab
 affiliation it could not resolve.
 
+It also lists everyone whose lab came from their **room** rather than their own cell,
+and everyone whose lab came from a room **shared** by two labs. Both are guesses the
+build cannot check; a non-zero count is expected, not a fault.
+
 Two lines in it start with `!!` and must both read `(0)`: corrections keyed on a name
 that matches nobody, and published rooms labelled like animal-facility space. A
 non-zero count on the first means a correction silently stopped applying; on the

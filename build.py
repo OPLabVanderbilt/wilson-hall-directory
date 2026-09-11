@@ -27,7 +27,7 @@ XLSX = HERE / "2025_2026 Wilson Hall Space Assignments.xlsx"
 # CONFIRM THIS WITH THE VICE CHAIR AT THE START OF EVERY REVISION -- it is the one
 # thing here that goes stale by simply being left alone, and a wrong date silently
 # mis-stamps the spreadsheet the department works from.
-TODAY = datetime.date(2026, 9, 10)
+TODAY = datetime.date(2026, 9, 11)
 
 # --- Policy switches ---------------------------------------------------------
 
@@ -156,6 +156,9 @@ EXCLUDE_PEOPLE = {
     # one of the CONFLICTING LAB AFFILIATION entries (CATlab vs Logan), so that
     # conflict goes with him rather than needing to be resolved.
     "kaleb lowe",
+    # Reported 2026-09-11: no longer in the Constantinidis lab, and not in 413, his
+    # only room. 413 keeps its other four occupants.
+    "junda zhu",
 
     # Reported 2026-09-09 as out of the Constantinidis lab; confirmed gone.
     "will banks",
@@ -275,11 +278,9 @@ LAB_OVERRIDES = {
     # Confirmed 2026-09-09. The sheet put him in 221C, a Woodman room, which is
     # what made him look like a Marois/Woodman conflict; he has left that room.
     "zengbo xie":    "Marois",
-    # Her cell reads "Kekes-Szabo, Sophia (Palmeri post-doc)". That is wrong -- she is
-    # a post-doc in Sohee Park's lab, confirmed 2026-09-10. Do not "restore" Palmeri
-    # from the spreadsheet. Note this is not the old case-sensitivity bug reappearing:
-    # that bug hid the sheet's Palmeri and let 213D make her look like Park by
-    # accident. The right answer was Park; the reason was wrong.
+    # A post-doc in Sohee Park's lab, confirmed 2026-09-10. One of her spreadsheet
+    # cells names a different lab and is wrong; this pin is what overrides it, so do
+    # not remove it or take her lab from the spreadsheet.
     "sophia kekes-szabo": "Park",
     # She sits in both 014A (Kaas) and 035 (Chen), so the build had no way to choose
     # and reported it as a conflict. Kaas is right -- confirmed 2026-09-10.
@@ -351,7 +352,8 @@ EXTRA_PEOPLE = [
     {"first": "Daniel",    "last": "Garcia-Barnett", "role": "Grad student", "lab": "Marois"},
     {"first": "Isabella",  "last": "Jackson",      "role": "Grad student", "lab": "Watts"},
     {"first": "Justin",    "last": "Jaraczewski",  "role": "Grad student", "lab": "Womelsdorf"},
-    {"first": "Ashna",     "last": "Ramiah",       "role": "Grad student", "lab": "BRAINS"},
+    {"first": "Ashna",     "last": "Ramiah",       "role": "Grad student", "lab": "BRAINS",
+     "rooms": ["210A", "312"]},   # assigned, reported 2026-09-11
     {"first": "Yuerou",    "last": "Tang",         "role": "Grad student", "lab": "Tong"},
     {"first": "Andrew",    "last": "Tornatore",    "role": "Grad student", "lab": "Polyn"},
     {"first": "Ella",      "last": "Weeks",        "role": "Grad student", "lab": "Woodman"},
@@ -590,10 +592,9 @@ def parse_person(raw_assignee, room_lab):
         #
         # The keyword is matched case-insensitively but the surname is NOT: the sheet
         # also writes "Tong post-doc" and "Bastos grad student" in lower case, and a
-        # case-sensitive keyword dropped the lab silently. Worse than losing it --
-        # the person then fell back to the lab of whatever room they sat in, so
-        # Kekes-Szabo read as Park when her cell says Palmeri. Keep [A-Z] on the
-        # surname so a lower-case word is never taken for a lab name.
+        # case-sensitive keyword dropped the lab silently -- and a person left with
+        # no lab of their own falls back to the lab of whatever room they sit in.
+        # Keep [A-Z] on the surname so a lower-case word is never taken for a lab.
         lm = re.match(r"^\s*([A-Z][A-Za-z\-]+)\s+(?i:Lab\b|Grad|Post|Neuro|Personnel)", g)
         if lm and lab is None:
             lab = canon_lab(lm.group(1))

@@ -32,8 +32,8 @@ wrong, nobody extra. The 12 missing were precisely the TBD people, who have no r
 so sit on the "Awaiting Room" sheet that `build.py` does not read.
 
 That test predates the corrections applied later the same day, so its raw numbers are
-stale; the method is what it establishes. **The roster is now 136 people with 10 on
-"Awaiting Room".**
+stale; the method is what it establishes. **The roster was 133 people with 9 on
+"Awaiting Room" as of 2026-09-11.**
 
 To do it:
 
@@ -42,7 +42,7 @@ To do it:
 3. Empty the maps now absorbed: `EXCLUDE_PEOPLE`, `EXCLUDE_ROOMS`,
    `REMOVE_PLACEMENTS`, `EXTRA_ROOMS`, `ROLE_OVERRIDES`, `LAB_OVERRIDES`,
    `SECOND_LAB`, `ROOM_LAB_OVERRIDES`, most of `SPELLING_*`.
-4. **Pass condition: the same people out as went in — 136 at the time of writing,
+4. **Pass condition: the same people out as went in — 133 at the time of writing,
    so re-read the current count from `review.txt` before trusting that number.**
    Keep the old sheet in the folder as history.
 
@@ -114,9 +114,9 @@ Office documents are gitignored, but new working files may not be.
 When a person's cell names no lab, they inherit the lab of the room they sit in. That
 turns a gap into a **wrong answer** rather than a blank. `review.txt` now lists them:
 
-    LAB TAKEN FROM THE ROOM, NOT THEIR OWN CELL -- unverified (21):
+    LAB TAKEN FROM THE ROOM, NOT THEIR OWN CELL -- unverified (20):
 
-Currently 21 people, mostly staff and undergraduates whose cells carry only a name.
+Currently 20 people, mostly staff and undergraduates whose cells carry only a name.
 Each is a plausible guess, not a fact — anyone working out of another lab's room is
 wrong there. Pinning someone in `LAB_OVERRIDES` drops them off the list, so it doubles
 as a record of what has actually been checked. Unlike the two `!!` guards, a non-zero
@@ -124,14 +124,20 @@ count here is normal and not a failure.
 
 This bit on 2026-09-10. The lab keyword was matched case-sensitively, so the sheet's
 "Tong post-doc" and "Bastos grad student" dropped the lab that was right there in the
-cell. Parde and Ricci ended up with no lab; Kekes-Szabo ended up in Park because 213D
-is a Park room. The keyword is now case-insensitive, the surname deliberately still
-is not, so a lower-case word cannot be read as a lab name.
+cell, leaving Parde and Ricci with no lab. The keyword is now case-insensitive; the
+surname deliberately still is not, so a lower-case word cannot be read as a lab name.
 
-Kekes-Szabo is also the reminder that **the sheet's own annotation can be wrong**: her
-cell says "Palmeri post-doc" and she is in fact a post-doc in Sohee Park's lab, so she
-is pinned in `LAB_OVERRIDES`. Fixing the parser made the sheet's error visible for the
-first time -- before that, an accident had been hiding it behind the right answer.
+The fix also showed that **the sheet's own annotations can contradict each other**.
+One post-doc had two cells naming different labs, and only one was correct. The case
+bug had been discarding the wrong one, so nothing looked amiss; fixing the bug exposed
+the contradiction and the alphabetical tie-break briefly picked the wrong lab, before
+the correct one was pinned in `LAB_OVERRIDES`. A parser fix can make someone *worse*
+by surfacing a conflict the build then resolves arbitrarily — check the CONFLICTING LAB
+AFFILIATION list after any change to parsing.
+
+**Do not name individuals when documenting a mis-attribution.** This repository is
+public; a note explaining that someone was wrongly listed under a lab publishes that
+wrong association. Keep the lesson, drop the name.
 
 ## Two audiences, two names
 
@@ -158,8 +164,8 @@ faculty name — they cost about 190px of a 375px row.
 
 ## Open items
 
-- **10 people have no room** and show TBD — the incoming graduate students. Whoever
-  allocates offices could clear all ten at once.
+- **9 people have no room** and show TBD — the incoming graduate students. Whoever
+  allocates offices could clear all nine at once.
 - **A staff member listed from a 2021 entry** appears as Staff, but the department
   roster lists them as a graduate student. Unresolved.
 - **15 students on the roster have no advisor listed**, so it is unclear whether they

@@ -27,7 +27,7 @@ XLSX = HERE / "2025_2026 Wilson Hall Space Assignments.xlsx"
 # CONFIRM THIS WITH THE VICE CHAIR AT THE START OF EVERY REVISION -- it is the one
 # thing here that goes stale by simply being left alone, and a wrong date silently
 # mis-stamps the spreadsheet the department works from.
-TODAY = datetime.date(2026, 9, 11)
+TODAY = datetime.date(2026, 9, 19)
 
 # --- Policy switches ---------------------------------------------------------
 
@@ -169,6 +169,12 @@ EXCLUDE_PEOPLE = {
     "hyeonseung lee",
     # Same person as Ziqi Wang below, who keeps 213A.
     "joanna wang",
+
+    # Reported 2026-09-19 by Kaczkurkin.
+    "humza ahmed",           # no longer at VU; was published in 210 (BRAINS lab)
+    "leighton durham",       # graduated years ago; his EXTRA_PEOPLE entry is
+                             # deleted too. His only sheet room is the withheld
+                             # 205, so this key is kept alive by that row.
 }
 
 # Standing information that is not a room. These appear in Common spaces and are
@@ -333,8 +339,6 @@ EXTRA_PEOPLE = [
      "title": "Senior Lecturer", "lab": None, "rooms": ["503"]},
     # Her only spreadsheet room was 205, withheld now that Kaczkurkin has said
     # the lab is 210. Without this entry she would disappear from the directory.
-    {"first": "Leighton", "last": "Durham", "role": "Grad student",
-     "lab": "BRAINS", "rooms": ["210"]},
 
     # Graduate students on the department roster with no room in the space sheet,
     # added 2026-09-09 from
@@ -380,6 +384,17 @@ EXTRA_PEOPLE = [
     # lab's main entry door -- so he appears here rather than as a correction.
     {"first": "David", "last": "Coggan", "role": "Post-doc",
      "lab": "Tong", "rooms": ["422"]},
+
+    # Reported 2026-09-19 by Kaczkurkin. Post-doc in the BRAINS lab; 210A is the
+    # BRAINS lab room, already shared by Archer and Ramiah.
+    {"first": "Alireza", "last": "Abbasi", "role": "Post-doc",
+     "lab": "BRAINS", "rooms": ["210A"]},
+
+    # Reported 2026-09-19: new Grants Specialist, filling the post Sydnie Rathert
+    # vacated. 301A is that office -- the sheet still tags it "Break Room" with
+    # Rathert (excluded) in it, so FACILITY_LABELS relabels it to "Office" below.
+    {"first": "Sarah Beth", "last": "Juneau", "role": "Staff",
+     "title": "Grants Specialist", "lab": None, "rooms": ["301A"]},
 ]
 
 # Confirmed spellings. The spreadsheet holds both variants for these people;
@@ -419,6 +434,7 @@ NICKNAMES = {
 # Rooms everyone actually asks for at the front door.
 FACILITY_LABELS = {
     "301":  "Department Main Office",
+    "301A": "Office",   # Grants Specialist's office; sheet still mislabels it "Break Room"
     "301F": "Department Chair",
     "308A": "Vice Chair",
     "313":  "Grad Student Office",   # the sheet says just "Grad Student" here
